@@ -13,7 +13,6 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Đảm bảo đường dẫn này chính xác
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/duyphuc/olympics/fxml/LoginView.fxml"));
             Parent root = loader.load();
             primaryStage.setTitle("Olympic Analyzer - Đăng nhập");
