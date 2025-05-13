@@ -8,7 +8,7 @@ OlympicGamesMedalAnalyzer/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── com/
-│   │   │       └── yourgroup/
+│   │   │       └── duyphuc/
 │   │   │           └── olympics/
 │   │   │               ├── MainApp.java        // Lớp chính khởi chạy ứng dụng JavaFX
 │   │   │               │
@@ -51,7 +51,7 @@ OlympicGamesMedalAnalyzer/
 │   │   │
 │   │   └── resources/
 │   │       └── com/
-│   │           └── yourgroup/
+│   │           └── duyphuc/
 │   │               └── olympics/
 │   │                   ├── fxml/               // Chứa các file FXML cho giao diện
 │   │                   │   ├── LoginView.fxml
@@ -70,7 +70,7 @@ OlympicGamesMedalAnalyzer/
 │   └── test/                   // (Optional but recommended) Chứa các lớp test
 │       └── java/
 │           └── com/
-│               └── yourgroup/
+│               └── duyphuc/
 │                   └── olympics/
 │                       ├── service/
 │                       │   └── AuthServiceTest.java
