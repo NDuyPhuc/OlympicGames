@@ -6,9 +6,9 @@
 	  
 	  <properties>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	    <maven.compiler.source>11</maven.compiler.source>  <!-- Hoặc phiên bản JDK bạn dùng -->
-	    <maven.compiler.target>11</maven.compiler.target>
-	    <javafx.version>17.0.10</javafx.version> <!-- Kiểm tra phiên bản JavaFX mới nhất -->
+	    <maven.compiler.source>20</maven.compiler.source>  <!-- Hoặc phiên bản JDK bạn dùng -->
+	    <maven.compiler.target>20</maven.compiler.target>
+	    <javafx.version>20.0.2</javafx.version> <!-- Kiểm tra phiên bản JavaFX mới nhất -->
 	  </properties>
 	  <dependencies>
 	    <!-- JavaFX -->
@@ -76,8 +76,8 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.11.0</version>
             <configuration>
-                <source>11</source>
-                <target>11</target>
+                <source>${maven.compiler.source}</source>
+                <target>${maven.compiler.source}</target>
             </configuration>
         </plugin>
         <plugin>
@@ -89,7 +89,7 @@
                     <!-- Default configuration for running with: mvn clean javafx:run -->
                     <id>default-cli</id>
                     <configuration>
-                        <mainClass>com.duyphuc.olympicsgames.MainApp</mainClass>
+                        <mainClass>com.duyphuc.olympics.MainApp</mainClass>
                         <launcher>app</launcher>
                         <jlinkZipName>app</jlinkZipName>
                         <jlinkImageName>app</jlinkImageName>
