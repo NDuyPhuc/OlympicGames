@@ -1,0 +1,160 @@
+/* src/main/resources/com/yourgroup/olympics/css/medal_management_styles.css */
+
+.root-pane {
+    -fx-background-color: #f0f2f5; /* Light gray background */
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50; /* Dark blue-gray text */
+    -fx-padding: 5px 0 10px 0;
+}
+
+.sub-header-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #34495e; /* Slightly lighter blue-gray */
+}
+
+.form-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #555;
+}
+
+/* ComboBox styling */
+.combo-box-custom {
+    -fx-font-size: 13px;
+    -fx-pref-height: 35px;
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7; /* Light silver border */
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+.combo-box-custom .list-cell { /* Style for items in dropdown */
+    -fx-font-size: 13px;
+    -fx-background-color: white;
+    -fx-text-fill: #333;
+}
+.combo-box-custom .list-cell:hover {
+    -fx-background-color: #e0e6ef; /* Light blue hover */
+}
+.combo-box-custom .list-cell:selected {
+    -fx-background-color: #3498db; /* Blue selection */
+    -fx-text-fill: white;
+}
+
+
+/* TextField styling */
+.text-field-search, .text-field-form {
+    -fx-font-size: 13px;
+    -fx-pref-height: 35px;
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px 8px;
+}
+.text-field-search:focused, .text-field-form:focused {
+    -fx-border-color: #3498db; /* Blue border on focus */
+    -fx-effect: dropshadow(gaussian, rgba(52, 152, 219, 0.5), 5, 0, 0, 0);
+}
+
+/* TableView styling */
+.table-view-custom {
+    -fx-border-color: #dfe4ea;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.table-view-custom .column-header-background {
+    -fx-background-color: #e9ecef; /* Light gray header background */
+}
+
+.table-view-custom .column-header .label {
+    -fx-text-fill: #2c3e50; /* Dark text for header */
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 8px;
+}
+
+.table-view-custom .table-cell {
+    -fx-font-size: 13px;
+    -fx-padding: 8px;
+    -fx-border-color: transparent #dfe4ea transparent transparent; /* Vertical lines */
+}
+
+.table-view-custom .table-row-cell:odd {
+    -fx-background-color: #f8f9fa; /* Very light gray for odd rows */
+}
+.table-view-custom .table-row-cell:even {
+    -fx-background-color: white;
+}
+
+.table-view-custom .table-row-cell:selected {
+    -fx-background-color: #aed6f1; /* Light blue for selected row */
+    -fx-text-fill: #222;
+}
+.table-view-custom .placeholder .label {
+    -fx-text-fill: #7f8c8d; /* Gray text for empty table placeholder */
+}
+
+
+/* Button styling */
+.button {
+    -fx-font-size: 13px;
+    -fx-pref-height: 38px;
+    -fx-padding: 8px 15px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 1, 1);
+}
+.button:hover {
+    -fx-opacity: 0.9;
+}
+.button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);
+    -fx-translate-y: 1px;
+}
+
+.button-add {
+    -fx-background-color: #27ae60; /* Green */
+}
+.button-add:hover {
+    -fx-background-color: #229954;
+}
+
+.button-update {
+    -fx-background-color: #2980b9; /* Blue */
+}
+.button-update:hover {
+    -fx-background-color: #2471a3;
+}
+
+.button-delete {
+    -fx-background-color: #c0392b; /* Red */
+}
+.button-delete:hover {
+    -fx-background-color: #a93226;
+}
+
+.button-clear {
+    -fx-background-color: #7f8c8d; /* Gray */
+    -fx-text-fill: white;
+}
+.button-clear:hover {
+    -fx-background-color: #707b7c;
+}
+
+/* Form container on the right */
+.form-container {
+    -fx-background-color: #ffffff;
+    -fx-padding: 20px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+}

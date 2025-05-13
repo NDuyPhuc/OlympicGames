@@ -1,5 +1,7 @@
 package com.duyphuc.olympics.model;
 
+import java.util.Objects;
+
 public class OlympicEvent {
     private int id;
     private String eventName;
@@ -64,5 +66,18 @@ public class OlympicEvent {
     @Override
     public String toString() {
         return eventName + " (" + year + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OlympicEvent that = (OlympicEvent) o;
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
