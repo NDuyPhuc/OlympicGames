@@ -1,36 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.canvas.Canvas?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
+<?import io.github.palexdev.materialfx.controls.MFXPasswordField?>
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
 
-<AnchorPane prefHeight="350.0" prefWidth="450.0" style="-fx-background-color: #f0f0f0;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duyphuc.olympics.controller.LoginController">
-   <children>
-      <VBox alignment="CENTER" layoutX="75.0" layoutY="50.0" prefHeight="250.0" prefWidth="300.0" spacing="15.0" style="-fx-background-color: white; -fx-padding: 20; -fx-border-color: lightgray; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5;">
-         <children>
-            <Label text="Đăng nhập Hệ thống" textFill="#333333">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Label>
-            <TextField fx:id="usernameField" promptText="Tên đăng nhập" />
-            <PasswordField fx:id="passwordField" promptText="Mật khẩu" />
-            <Button fx:id="loginButton" defaultButton="true" mnemonicParsing="false" onAction="#handleLogin" prefWidth="150.0" style="-fx-background-color: #007bff; -fx-text-fill: white;" text="Đăng nhập">
-               <font>
-                  <Font name="System Bold" size="14.0" />
-               </font>
-            </Button>
-            <Label fx:id="messageLabel" textFill="RED" visible="false">
-               <VBox.margin>
-                  <Insets top="5.0" />
-               </VBox.margin>
-            </Label>
-         </children>
-      </VBox>
-   </children>
-</AnchorPane>
+<StackPane fx:id="rootPane" prefHeight="580.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.duyphuc.olympics.controller.LoginController"
+           stylesheets="/com/duyphuc/olympics/css/login.css"
+           styleClass="root"
+           alignment="CENTER"> <!-- THÊM alignment="CENTER" cho StackPane gốc -->
+
+    <!-- Background with gradient -->
+    <!-- Rectangle và Canvas sẽ tự động co giãn theo StackPane nếu không có kích thước cố định -->
+    <Rectangle fx:id="backgroundRect" styleClass="background-rect"
+               width="${rootPane.width}" height="${rootPane.height}"/> <!-- Bind width/height với rootPane -->
+
+    <!-- Canvas for Particle Effects -->
+    <Canvas fx:id="particleCanvas" mouseTransparent="true"
+            width="${rootPane.width}" height="${rootPane.height}"/> <!-- Bind width/height với rootPane -->
+
+    <!-- Login Form Container -->
+    <!-- VBox này sẽ được căn giữa bởi StackPane gốc.
+         Chúng ta không muốn nó giãn ra toàn màn hình, chỉ giữ kích thước cố định của nó.
+         Việc StackPane gốc có alignment="CENTER" sẽ giữ VBox này ở giữa.
+    -->
+    <VBox fx:id="loginContainer" styleClass="login-container" alignment="CENTER" spacing="25"
+          maxWidth="400" prefWidth="400" 
+          maxHeight="500" >
+        <padding>
+            <Insets top="30" right="40" bottom="30" left="40"/>
+        </padding>
+
+        <!-- Olympic Logo Animation Container -->
+        <Pane fx:id="olympicLogoContainer" styleClass="logo-container"
+              minHeight="100" prefHeight="120" maxHeight="140"
+              prefWidth="300"> <!-- Thêm alignment="CENTER" cho Pane -->
+            <!-- Olympic Rings will be added programmatically -->
+        </Pane>
+
+        <!-- Title -->
+        <Label text="Olympic Games Analyzer" styleClass="title-label" alignment="CENTER"/>
+
+        <!-- Form Fields -->
+        <VBox spacing="18" alignment="CENTER" styleClass="fields-container" prefWidth="300">
+
+            <MFXTextField fx:id="usernameField" promptText="Tên đăng nhập" styleClass="input-field" floatMode="BORDER"
+                          prefWidth="Infinity"/>
+
+            <MFXPasswordField fx:id="passwordField" promptText="Mật khẩu" styleClass="input-field" floatMode="BORDER"
+                                prefWidth="Infinity"/>
+
+            <Label fx:id="messageLabel" styleClass="message-label" visible="false" managed="true" alignment="CENTER" wrapText="true"/> <!-- Thêm wrapText -->
+
+            <HBox alignment="CENTER" prefWidth="Infinity">
+                 <MFXButton fx:id="loginButton" text="ĐĂNG NHẬP" onAction="#handleLogin" styleClass="login-button" depthLevel="LEVEL1"
+                           minWidth="150"/>
+            </HBox>
+        </VBox>
+
+        <!-- Footer -->
+        <HBox alignment="CENTER" spacing="5">
+            <Label text="Olympic Games Analyzer" styleClass="footer-label"/>
+            <Label text="©" styleClass="footer-label"/>
+            <Label text="2025" styleClass="footer-label"/>
+        </HBox>
+    </VBox>
+</StackPane>

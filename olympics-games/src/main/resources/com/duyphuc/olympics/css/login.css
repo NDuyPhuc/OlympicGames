@@ -1,0 +1,122 @@
+
+/* Root Styles & Variables */
+.root {
+    -fx-font-family: "Olympic Sans", "Segoe UI", Arial, sans-serif; /* Added fallback fonts */
+
+    /* Olympic Color Palette */
+    -olympics-blue: #0085C7;
+    -olympics-yellow: #F4C300;
+    -olympics-black: #000000;
+    -olympics-green: #009F3D;
+    -olympics-red: #DF0024;
+    -olympics-white: #FFFFFF; /* Added white for text on colored backgrounds */
+
+    /* Additional Colors & Theme */
+    -background-start: #1A1D2E; /* Slightly adjusted for a deeper feel */
+    -background-end: #10131E;   /* Slightly adjusted */
+    -card-background: rgba(255, 255, 255, 0.97); /* Slightly more opaque */
+    -card-shadow: rgba(0, 0, 0, 0.25);
+    -text-primary: #333333;
+    -text-secondary: #555555;
+    -input-border-color: #CCCCCC;
+    -input-border-focused-color: -olympics-blue;
+}
+
+/* Background styling */
+.background-rect {
+    -fx-fill: linear-gradient(to bottom right, -background-start, -background-end);
+}
+
+/* Login Container */
+.login-container {
+    -fx-background-color: -card-background;
+    -fx-background-radius: 20px; /* Softer corners */
+    -fx-padding: 35px;
+    -fx-effect: dropshadow(gaussian, -card-shadow, 20, 0.3, 0, 8); /* Adjusted shadow */
+    -fx-border-color: transparent; /* Ensure no default border interferes */
+}
+
+/* Logo Container - Ensure it doesn't interfere with VBox spacing */
+.logo-container {
+    -fx-background-color: transparent;
+    -fx-alignment: center;
+    /* Consider adding -fx-min-height if content pushes it around */
+}
+
+/* Title */
+.title-label {
+    -fx-font-size: 26px; /* Slightly larger */
+    -fx-font-weight: bold;
+    -fx-text-fill: -olympics-blue;
+    -fx-padding: 0 0 10px 0; /* Add some space below the title */
+}
+
+/* Input Fields Container */
+.fields-container {
+    -fx-padding: 15px 0px;
+}
+
+/* --- MaterialFX Specific Styling --- */
+/* You might need to adjust these based on how MaterialFX applies its own styles.
+   It's often better to use MaterialFX's built-in theming capabilities if available.
+   These are general attempts to style MFX components.
+*/
+
+/* General Input Field Styling (for MFXTextField, MFXPasswordField) */
+.input-field {
+    -fx-font-size: 14px;
+    /* MFXTextField often has its own prompt text styling.
+       The following are for the border and text color when focused. */
+}
+
+/* Example: To style the line/border of MFXTextField when focused.
+   MaterialFX uses specific sub-component style classes. You'd need to inspect
+   the MFX CSS or use ScenicView to find the exact class names if these don't work.
+   Common ones are .mfx-text-field .line, .mfx-text-field .input-line
+*/
+.mfx-text-field:focused .input-line { /* Example, might need adjustment for MFX */
+    -fx-stroke: -input-border-focused-color;
+}
+.mfx-password-field:focused .input-line { /* Example */
+    -fx-stroke: -input-border-focused-color;
+}
+
+/*
+   If you want to override default MFX styles, you might need to be more specific
+   or use !important (though try to avoid !important if possible).
+*/
+
+/* MFXButton Styling */
+.login-button {
+    -fx-background-color: -olympics-blue;
+    -fx-text-fill: -olympics-white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12px 25px; /* Slightly more padding */
+    -fx-background-radius: 8px; /* Softer radius for button */
+    /* MFXButton has its own ripple effect and elevation,
+       so direct hover effects might conflict or be overridden.
+       You can try:
+       -mfx-ripple-color: derive(-olympics-blue, 50%);
+    */
+}
+
+.login-button:hover {
+	-fx-background-color: derive(-olympics-blue, -10%); 
+    -fx-cursor: hand;
+}
+
+/* Message Label */
+.message-label {
+    -fx-text-fill: -olympics-red;
+    -fx-font-size: 13px; /* Slightly larger for readability */
+    -fx-padding: 8px 0px;
+    -fx-font-weight: normal;
+}
+
+/* Footer */
+.footer-label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 11px; /* Slightly smaller */
+    -fx-opacity: 0.8; /* Make it a bit more subtle */
+}
