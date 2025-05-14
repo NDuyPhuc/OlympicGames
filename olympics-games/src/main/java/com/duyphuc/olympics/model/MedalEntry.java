@@ -1,3 +1,4 @@
+//MedalEntry.java
 package com.duyphuc.olympics.model;
 
 public class MedalEntry {

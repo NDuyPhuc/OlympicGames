@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.geometry.Insets?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duyphuc.olympics.controller.MainDashboardController">
+<BorderPane fx:id="mainDashboardPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duyphuc.olympics.controller.MainDashboardController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
           <Menu mnemonicParsing="false" text="Hệ thống">
             <items>
+              <!-- Thêm MenuItem để quay lại màn hình chính của Dashboard -->
+              <MenuItem fx:id="dashboardHomeMenuItem" mnemonicParsing="false" onAction="#handleShowDashboardHome" text="Màn hình chính" />
               <MenuItem fx:id="profileMenuItem" mnemonicParsing="false" onAction="#handleShowProfile" text="Thông tin cá nhân" />
               <MenuItem fx:id="logoutMenuItem" mnemonicParsing="false" onAction="#handleLogout" text="Đăng xuất" />
             </items>
@@ -37,14 +39,20 @@
       </MenuBar>
    </top>
    <center>
-      <VBox alignment="CENTER" spacing="20.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label fx:id="welcomeLabel" style="-fx-font-size: 24px;" text="Chào mừng!" />
-            <Label text="Chọn một chức năng từ thanh menu." />
-         </children>
-         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
-      </VBox>
+      <!-- Vùng này sẽ được dùng để hiển thị các view khác nhau -->
+      <BorderPane fx:id="contentArea" BorderPane.alignment="CENTER">
+         <center>
+            <!-- Nội dung chào mừng ban đầu -->
+            <VBox alignment="CENTER" spacing="20.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Label fx:id="welcomeLabel" style="-fx-font-size: 24px;" text="Chào mừng!" />
+                  <Label text="Chọn một chức năng từ thanh menu." />
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </VBox>
+         </center>
+      </BorderPane>
    </center>
 </BorderPane>

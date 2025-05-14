@@ -1,8 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?> 
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.embed.swing.SwingNode?>
+<?import javafx.scene.layout.StackPane?> 
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1">
-	<!-- TODO Add Nodes -->
-</AnchorPane>
-
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duyphuc.olympics.controller.ChartViewController">
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Chart Type:" />
+                <ComboBox fx:id="chartTypeComboBox" prefWidth="250.0" />
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT" fx:id="olympicEventControls">
+                <Label text="Olympic Event:" />
+                <ComboBox fx:id="olympicEventComboBox" prefWidth="200.0" />
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT" fx:id="countryControls">
+                <Label text="Country (NOC):" />
+                <ComboBox fx:id="countryComboBox" prefWidth="150.0" editable="true"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT" fx:id="topNControls">
+                <Label text="Top N:" />
+                <Spinner fx:id="topNSpinner" min="1" max="20" initialValue="10" editable="true" prefWidth="80.0"/>
+                <Label text="Sort By:" />
+                <ComboBox fx:id="sortByComboBox" prefWidth="100.0" />
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT" fx:id="medalTypeControls">
+                 <Label text="Medal Type:" />
+                 <ComboBox fx:id="medalTypeComboBox" prefWidth="100.0" />
+            </HBox>
+            <Button fx:id="generateChartButton" text="Generate Chart" onAction="#handleGenerateChart" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        </VBox>
+    </top>
+    <center>
+        <!-- THAY THẾ SwingNode trực tiếp BẰNG StackPane -->
+        <StackPane fx:id="chartContainerPane" BorderPane.alignment="CENTER">
+            <children>
+                <SwingNode fx:id="swingNodeChart" />
+                <!-- ProgressIndicator sẽ được thêm vào từ code controller,
+                     không cần khai báo ProgressIndicator ở đây trong FXML
+                     nếu bạn tạo và thêm nó bằng Java code trong controller.
+                     Nếu muốn khai báo ở FXML, bạn cần thêm fx:id cho nó
+                     và import javafx.scene.control.ProgressIndicator. -->
+            </children>
+        </StackPane>
+    </center>
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+    </padding>
+</BorderPane>

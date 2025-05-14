@@ -80,7 +80,7 @@ private Particle createRandomParticle() {
     double speedX = (random.nextDouble() - 0.5) * 0.7;
     double speedY = (random.nextDouble() - 0.5) * 0.7;
     
-    double size = 2 + random.nextDouble() * 3;
+    double size = 3 + random.nextDouble() * 5;
     double lifespan = 200 + random.nextDouble() * 200;
     
     Color color = olympicColors[random.nextInt(olympicColors.length)];

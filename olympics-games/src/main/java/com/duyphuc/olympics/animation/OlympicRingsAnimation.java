@@ -6,8 +6,6 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.effect.DropShadow;
-// import javafx.scene.effect.Bloom; // Bloom có thể nặng, cân nhắc nếu hiệu năng kém
-// import javafx.scene.effect.Lighting; // Lighting cũng có thể nặng
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
