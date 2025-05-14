@@ -66,11 +66,6 @@
             </HBox>
         </VBox>
 
-        <!-- Footer -->
-        <HBox alignment="CENTER" spacing="5">
-            <Label text="Olympic Games Analyzer" styleClass="footer-label"/>
-            <Label text="©" styleClass="footer-label"/>
-            <Label text="2025" styleClass="footer-label"/>
-        </HBox>
+        
     </VBox>
 </StackPane>

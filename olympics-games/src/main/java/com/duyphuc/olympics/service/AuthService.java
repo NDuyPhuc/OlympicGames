@@ -5,18 +5,19 @@ import com.duyphuc.olympics.dao.UserDAO;
 import com.duyphuc.olympics.model.User;
 import com.duyphuc.olympics.util.PasswordHasher;
 
+import java.sql.SQLException; // Thêm import này
+import java.util.Optional; // Thêm import này
+
 public class AuthService {
 
-    private static AuthService instance; // For Singleton pattern
+    private static AuthService instance;
     private final UserDAO userDAO;
-    private User currentUser; // Lưu người dùng đang đăng nhập (instance variable)
+    private User currentUser;
 
-    // Private constructor to prevent instantiation from outside
     private AuthService() {
-        this.userDAO = new UserDAO(); // Khởi tạo UserDAO
+        this.userDAO = new UserDAO();
     }
 
-    // Static method to get the single instance of AuthService
     public static synchronized AuthService getInstance() {
         if (instance == null) {
             instance = new AuthService();
@@ -24,41 +25,36 @@ public class AuthService {
         return instance;
     }
 
-    /**
-     * Attempts to log in a user.
-     * @param username The username.
-     * @param password The plain text password.
-     * @return The User object if login is successful, null otherwise.
-     */
     public User login(String username, String password) {
+        // ... (code hiện tại của bạn)
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             System.err.println("AuthService: Tên đăng nhập và mật khẩu không được để trống.");
             return null;
         }
 
-        User user = userDAO.getUserByUsername(username);
+        // Nên sử dụng Optional để xử lý null an toàn hơn từ DAO
+        Optional<User> userOpt = userDAO.getUserByUsernameOptional(username); // Giả sử UserDAO có phương thức này
 
-        if (user == null) {
+        if (userOpt.isEmpty()) {
             System.err.println("AuthService: Tên đăng nhập '" + username + "' không tồn tại.");
             return null;
         }
 
-        // Giả sử PasswordHasher.verifyPassword hoạt động đúng
+        User user = userOpt.get();
+
         if (PasswordHasher.verifyPassword(password, user.getHashedPassword())) {
-            this.currentUser = user; // Lưu session người dùng vào instance
+            this.currentUser = user;
             System.out.println("AuthService: User '" + username + "' logged in successfully. Role: " + user.getRole());
             return user;
         } else {
             System.err.println("AuthService: Mật khẩu không đúng cho user '" + username + "'.");
-            this.currentUser = null; // Đảm bảo currentUser là null nếu đăng nhập thất bại
+            this.currentUser = null;
             return null;
         }
     }
 
-    /**
-     * Logs out the current user.
-     */
     public void logout() {
+        // ... (code hiện tại của bạn)
         if (this.currentUser != null) {
             System.out.println("AuthService: User '" + this.currentUser.getUsername() + "' logged out.");
         } else {
@@ -67,23 +63,12 @@ public class AuthService {
         this.currentUser = null;
     }
 
-    /**
-     * Gets the currently logged-in user.
-     * @return The User object if a user is logged in, null otherwise.
-     */
     public User getCurrentUser() {
-        return this.currentUser; // Trả về currentUser của instance
+        return this.currentUser;
     }
 
-    /**
-     * Registers a new user.
-     * @param username The username.
-     * @param plainPassword The plain text password.
-     * @param email The email address.
-     * @param role The role of the user.
-     * @return true if registration is successful, false otherwise.
-     */
     public boolean registerUser(String username, String plainPassword, String email, String role) {
+        // ... (code hiện tại của bạn)
         if (username == null || username.isEmpty() ||
             plainPassword == null || plainPassword.isEmpty() ||
             email == null || email.isEmpty() ||
@@ -92,31 +77,23 @@ public class AuthService {
             return false;
         }
 
-        // Kiểm tra username đã tồn tại chưa
-        if (userDAO.getUserByUsername(username) != null) {
+        if (userDAO.getUserByUsernameOptional(username).isPresent()) { // Sử dụng Optional
             System.err.println("AuthService: Tên đăng nhập '" + username + "' đã tồn tại.");
             return false;
         }
-
-        // (Tùy chọn) Kiểm tra email đã tồn tại chưa (nếu UserDAO có phương thức getUserByEmail)
-        // if (userDAO.getUserByEmail(email) != null) {
-        //     System.err.println("AuthService: Email '" + email + "' đã được sử dụng.");
-        //     return false;
-        // }
-
-        // (Tùy chọn) Validate định dạng email
-        // if (!isValidEmail(email)) {
-        //    System.err.println("AuthService: Định dạng email không hợp lệ.");
-        //    return false;
-        // }
 
         String hashedPassword = PasswordHasher.hashPassword(plainPassword);
         if (hashedPassword == null) {
             System.err.println("AuthService: Lỗi khi băm mật khẩu.");
             return false;
         }
+        // Đảm bảo User model có constructor phù hợp hoặc setter
+        User newUser = new User();
+        newUser.setUsername(username);
+        newUser.setHashedPassword(hashedPassword);
+        newUser.setEmail(email);
+        newUser.setRole(role);
 
-        User newUser = new User(username, hashedPassword, email, role); // Giả sử User có constructor này
         boolean success = userDAO.addUser(newUser);
         if (success) {
             System.out.println("AuthService: User '" + username + "' registered successfully.");
@@ -126,9 +103,60 @@ public class AuthService {
         return success;
     }
 
-    // (Tùy chọn) Phương thức kiểm tra định dạng email đơn giản
-    // private boolean isValidEmail(String email) {
-    //     String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-    //     return email.matches(emailRegex);
-    // }
+    /**
+     * Changes the password for a given user.
+     * @param username The username of the user.
+     * @param oldPassword The current plain text password.
+     * @param newPassword The new plain text password.
+     * @return true if the password was changed successfully, false otherwise.
+     */
+    public boolean changePassword(String username, String oldPassword, String newPassword) {
+        if (username == null || username.isEmpty() ||
+            oldPassword == null || oldPassword.isEmpty() ||
+            newPassword == null || newPassword.isEmpty()) {
+            System.err.println("AuthService: Tên đăng nhập, mật khẩu cũ và mật khẩu mới không được để trống.");
+            return false;
+        }
+
+        // Lấy thông tin người dùng
+        Optional<User> userOpt = userDAO.getUserByUsernameOptional(username); // Giả sử UserDAO có phương thức này
+        if (userOpt.isEmpty()) {
+            System.err.println("AuthService: Không tìm thấy người dùng '" + username + "' để đổi mật khẩu.");
+            return false;
+        }
+
+        User user = userOpt.get();
+
+        // Xác minh mật khẩu cũ
+        if (!PasswordHasher.verifyPassword(oldPassword, user.getHashedPassword())) {
+            System.err.println("AuthService: Mật khẩu cũ không đúng cho người dùng '" + username + "'.");
+            return false;
+        }
+
+        // Băm mật khẩu mới
+        String newHashedPassword = PasswordHasher.hashPassword(newPassword);
+        if (newHashedPassword == null) {
+            System.err.println("AuthService: Lỗi khi băm mật khẩu mới.");
+            return false;
+        }
+
+        // Cập nhật mật khẩu trong CSDL
+        try {
+            boolean success = userDAO.updateUserPassword(username, newHashedPassword); // UserDAO cần phương thức này
+            if (success) {
+                System.out.println("AuthService: Đổi mật khẩu thành công cho người dùng '" + username + "'.");
+                // Nếu người dùng đang đổi mật khẩu là người dùng hiện tại, cập nhật lại hashedPassword trong currentUser
+                if (this.currentUser != null && this.currentUser.getUsername().equals(username)) {
+                    this.currentUser.setHashedPassword(newHashedPassword);
+                }
+            } else {
+                System.err.println("AuthService: Không thể cập nhật mật khẩu mới cho người dùng '" + username + "' trong CSDL.");
+            }
+            return success;
+        } catch (SQLException e) {
+            System.err.println("AuthService: Lỗi SQL khi cập nhật mật khẩu: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

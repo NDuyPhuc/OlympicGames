@@ -1,8 +1,8 @@
 package com.duyphuc.olympics.controller;
 
-import com.duyphuc.olympics.MainApp; // Giả sử MainApp để quay lại login
-import com.duyphuc.olympics.service.AuthService; // Giả sử AuthService để lấy thông tin user
-import com.duyphuc.olympics.model.User;     // Giả sử model User
+import com.duyphuc.olympics.MainApp;
+import com.duyphuc.olympics.model.User;
+import com.duyphuc.olympics.service.AuthService;
 import com.duyphuc.olympics.util.AlertUtil;
 import com.duyphuc.olympics.util.FxmlLoaderUtil;
 
@@ -23,108 +23,106 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class MainDashboardController {
 
-    @FXML private BorderPane mainDashboardPane; // Tham chiếu đến BorderPane gốc
-    @FXML private BorderPane contentArea;       // Khu vực trung tâm để tải các view
-    @FXML private Label welcomeLabelInInitialView; // Đổi tên để phân biệt với welcomeLabel động
+    @FXML private BorderPane mainDashboardPane;
+    @FXML private BorderPane contentArea;
     @FXML private Menu adminMenu;
-    @FXML private MenuItem dashboardHomeMenuItem;
-    @FXML private MenuItem profileMenuItem;
-    @FXML private MenuItem logoutMenuItem;
-    @FXML private MenuItem manageMedalsMenuItem;
-    @FXML private MenuItem viewChartsMenuItem;
-    @FXML private MenuItem manageUsersMenuItem;
+    // Không cần các @FXML cho MenuItem nếu bạn không tương tác trực tiếp với chúng từ code
+    // (ngoài việc setVisible cho adminMenu). Các onAction đã được định nghĩa trong FXML.
 
-    private Node initialWelcomeContent; // Để lưu trữ VBox chào mừng ban đầu
+    private Node initialWelcomeView; // Sẽ chứa VBox chào mừng
+    private Label welcomeMessageLabel; // Label để hiển thị thông điệp chào mừng, sẽ nằm trong initialWelcomeView
+
     private AuthService authService;
 
     @FXML
     public void initialize() {
-        authService = AuthService.getInstance(); // Giả sử AuthService là Singleton
+        authService = AuthService.getInstance(); // Đảm bảo AuthService đã được khởi tạo
 
-        // Lưu lại nội dung chào mừng ban đầu
-        if (contentArea.getCenter() != null) {
-            initialWelcomeContent = contentArea.getCenter();
-            // Tìm Label chào mừng bên trong initialWelcomeContent nếu nó được định nghĩa trong FXML
-            if (initialWelcomeContent instanceof VBox) {
-                VBox initialVBox = (VBox) initialWelcomeContent;
-                for (Node node : initialVBox.getChildren()) {
-                    if (node instanceof Label && "welcomeLabel".equals(node.getId())) { // Kiểm tra fx:id của Label trong VBox chào mừng
-                        this.welcomeLabelInInitialView = (Label) node;
-                        break;
-                    }
-                }
-            }
-        } else {
-            // Nếu không có gì trong FXML, tạo nội dung chào mừng mặc định
-            createAndSetDefaultWelcomeContent();
-        }
+        // Tạo nội dung chào mừng ban đầu một cách chủ động
+        createInitialWelcomeView();
+        contentArea.setCenter(initialWelcomeView); // Hiển thị ngay khi khởi tạo
 
-        updateWelcomeMessage(); // Cập nhật thông điệp chào mừng
-        configureAdminMenu(); // Cấu hình menu admin
+        updateWelcomeMessage();
+        configureAdminMenu();
     }
 
-    private void createAndSetDefaultWelcomeContent() {
-        VBox welcomeBox = new VBox();
+    /**
+     * Tạo view chào mừng ban đầu và gán cho initialWelcomeView và welcomeMessageLabel.
+     */
+    private void createInitialWelcomeView() {
+        welcomeMessageLabel = new Label(); // Khởi tạo label chào mừng
+        welcomeMessageLabel.setId("welcomeMessageLabel"); // Đặt fx:id nếu muốn style qua CSS
+        welcomeMessageLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: #2c3e50; -fx-font-weight: bold;");
+
+        Label instructionLabel = new Label("Chọn một chức năng từ thanh menu hoặc bảng điều khiển.");
+        instructionLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
+
+        VBox welcomeBox = new VBox(30); // Tăng khoảng cách
         welcomeBox.setAlignment(Pos.CENTER);
-        welcomeBox.setSpacing(20.0);
-        // Tạo Label động mới cho welcome message
-        this.welcomeLabelInInitialView = new Label();
-        this.welcomeLabelInInitialView.setId("welcomeLabel"); // Đặt fx:id nếu bạn muốn tham chiếu sau này
-        this.welcomeLabelInInitialView.setStyle("-fx-font-size: 24px;");
+        welcomeBox.getChildren().addAll(welcomeMessageLabel, instructionLabel);
+        welcomeBox.setPadding(new Insets(50)); // Tăng padding
+        welcomeBox.setStyle("-fx-background-color: #ecf0f1; -fx-background-radius: 10;"); // Thêm chút style
 
-        Label instructionLabel = new Label("Chọn một chức năng từ thanh menu.");
-        welcomeBox.getChildren().addAll(this.welcomeLabelInInitialView, instructionLabel);
-        welcomeBox.setPadding(new Insets(20.0));
-        initialWelcomeContent = welcomeBox;
-        contentArea.setCenter(initialWelcomeContent);
+        initialWelcomeView = welcomeBox;
     }
 
+    /**
+     * Cập nhật nội dung của welcomeMessageLabel dựa trên người dùng hiện tại.
+     */
     private void updateWelcomeMessage() {
         User currentUser = authService.getCurrentUser();
-        String welcomeText = "Chào mừng!";
+        String welcomeText = "Chào mừng đến với Olympic Games Medal Analyzer!"; // Thông điệp chung hơn
         if (currentUser != null) {
             welcomeText = "Chào mừng, " + currentUser.getUsername() + "!";
         }
 
-        if (welcomeLabelInInitialView != null) {
-            welcomeLabelInInitialView.setText(welcomeText);
-        } else if (initialWelcomeContent instanceof VBox) {
-            // Cố gắng tìm và cập nhật label nếu welcomeLabelInInitialView chưa được gán đúng
-            VBox vb = (VBox) initialWelcomeContent;
-            if (!vb.getChildren().isEmpty() && vb.getChildren().get(0) instanceof Label) {
-                 ((Label) vb.getChildren().get(0)).setText(welcomeText);
-            }
+        if (welcomeMessageLabel != null) {
+            welcomeMessageLabel.setText(welcomeText);
         }
     }
 
+    /**
+     * Cấu hình hiển thị của menu admin dựa trên vai trò người dùng.
+     */
     private void configureAdminMenu() {
         User currentUser = authService.getCurrentUser();
         boolean isAdmin = currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole());
         adminMenu.setVisible(isAdmin);
+        // Nếu menu item "Quản lý người dùng" là một phần của menu admin thì không cần setVisible riêng
+        // Nếu nó là một menu item riêng biệt thì bạn cần @FXML cho nó và setVisible ở đây
     }
 
+    /**
+     * Tải một FXML view vào khu vực trung tâm của dashboard.
+     * @param fxmlPath Đường dẫn đến file FXML.
+     */
     private void loadViewIntoContentArea(String fxmlPath) {
         try {
-            Node view = FxmlLoaderUtil.loadFXML(fxmlPath);
+            // Sử dụng Objects.requireNonNull để kiểm tra fxmlPath không null, giúp debug dễ hơn
+            Node view = FxmlLoaderUtil.loadFXML(Objects.requireNonNull(fxmlPath, "FXML path cannot be null"));
             contentArea.setCenter(view);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) { // Bắt cả NullPointerException từ requireNonNull
             e.printStackTrace();
-            AlertUtil.showError("Lỗi Tải Giao Diện", "Không thể tải giao diện: " + fxmlPath + "\nLỗi: " + e.getMessage());
-            // Có thể quay lại màn hình chính nếu tải lỗi
+            AlertUtil.showError("Lỗi Tải Giao Diện",
+                    "Không thể tải giao diện: " + fxmlPath + "\nLỗi: " + e.getMessage());
+            // Quay lại màn hình dashboard home khi có lỗi
             handleShowDashboardHome(null);
         }
     }
 
     @FXML
-    void handleShowDashboardHome(ActionEvent event) { // Thêm ActionEvent cho FXML
-        if (initialWelcomeContent != null) {
-            contentArea.setCenter(initialWelcomeContent);
-            updateWelcomeMessage(); // Cập nhật lại welcome text
+    void handleShowDashboardHome(ActionEvent event) {
+        if (initialWelcomeView != null) {
+            contentArea.setCenter(initialWelcomeView);
+            updateWelcomeMessage(); // Đảm bảo thông điệp chào mừng được cập nhật
         } else {
-            createAndSetDefaultWelcomeContent();
+            // Trường hợp này không nên xảy ra nếu createInitialWelcomeView() được gọi trong initialize()
+            createInitialWelcomeView();
+            contentArea.setCenter(initialWelcomeView);
             updateWelcomeMessage();
         }
     }
@@ -132,23 +130,35 @@ public class MainDashboardController {
     @FXML
     void handleShowProfile(ActionEvent event) {
         try {
-            // Sử dụng FXMLLoader để có thể truyền dữ liệu cho controller nếu cần
+            User currentUser = authService.getCurrentUser();
+            if (currentUser == null) {
+                AlertUtil.showError("Lỗi Người Dùng", "Không tìm thấy thông tin người dùng hiện tại. Vui lòng đăng nhập lại.");
+                return;
+            }
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/duyphuc/olympics/fxml/UserProfileView.fxml"));
             Parent profileRoot = loader.load();
 
-            // Nếu UserProfileController cần dữ liệu người dùng:
-            // UserProfileController controller = loader.getController();
-            // controller.initData(authService.getCurrentUser());
+            UserProfileController controller = loader.getController();
+            // Truyền cả đối tượng User và AuthService cho UserProfileController
+            controller.initData(currentUser, authService);
 
             Stage profileStage = new Stage();
-            profileStage.setTitle("Thông tin cá nhân");
+            profileStage.setTitle("Hồ Sơ Người Dùng");
             profileStage.setScene(new Scene(profileRoot));
             profileStage.initModality(Modality.APPLICATION_MODAL);
-            profileStage.initOwner(mainDashboardPane.getScene().getWindow()); // Gắn owner
+            profileStage.initOwner(mainDashboardPane.getScene().getWindow());
+            profileStage.setResizable(false);
+            // Thêm icon nếu có:
+            // profileStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/duyphuc/olympics/images/app_icon.png"))));
             profileStage.showAndWait();
+
         } catch (IOException e) {
             e.printStackTrace();
-            AlertUtil.showError("Lỗi Tải Giao Diện", "Không thể mở màn hình thông tin cá nhân.");
+            AlertUtil.showError("Lỗi Tải Giao Diện", "Không thể mở màn hình hồ sơ người dùng: " + e.getMessage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            AlertUtil.showError("Lỗi Dữ Liệu", "Lỗi khi truy cập tài nguyên: " + e.getMessage() + ". Kiểm tra đường dẫn file FXML hoặc icon.");
         }
     }
 
@@ -158,25 +168,14 @@ public class MainDashboardController {
             authService.logout();
         }
         Stage currentStage = (Stage) mainDashboardPane.getScene().getWindow();
-        // Thay vì đóng stage hiện tại và tạo mới, ta gọi lại phương thức của MainApp
-        // để hiển thị lại scene login trên stage hiện tại.
         try {
-            // Giả sử MainApp có một phương thức để hiển thị lại login scene
+            // MainApp sẽ chịu trách nhiệm hiển thị lại màn hình login trên currentStage
             MainApp.showLoginScene(currentStage);
         } catch (Exception e) {
             e.printStackTrace();
-            AlertUtil.showError("Lỗi Đăng Xuất", "Không thể quay lại màn hình đăng nhập.");
-            // Fallback: tạo stage mới nếu MainApp.showLoginScene thất bại hoặc không tồn tại
-            try {
-                Stage loginStage = new Stage();
-                Parent loginRoot = FxmlLoaderUtil.loadFXML("/com/duyphuc/olympics/fxml/LoginView.fxml");
-                loginStage.setTitle("Olympic Games Analyzer - Đăng nhập");
-                loginStage.setScene(new Scene(loginRoot));
-                currentStage.close(); // Đóng stage cũ sau khi stage mới sẵn sàng
-                loginStage.show();
-            } catch (IOException ioEx) {
-                 ioEx.printStackTrace();
-            }
+            AlertUtil.showError("Lỗi Đăng Xuất", "Không thể quay lại màn hình đăng nhập. Vui lòng khởi động lại ứng dụng.");
+            // Trong trường hợp nghiêm trọng, có thể đóng ứng dụng
+            // Platform.exit();
         }
     }
 
@@ -190,13 +189,15 @@ public class MainDashboardController {
         loadViewIntoContentArea("/com/duyphuc/olympics/fxml/ChartView.fxml");
     }
 
+ // Trong MainDashboardController.java
     @FXML
     void handleManageUsers(ActionEvent event) {
         User currentUser = authService.getCurrentUser();
         if (currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole())) {
             loadViewIntoContentArea("/com/duyphuc/olympics/fxml/AdminUserManagementView.fxml");
         } else {
-            AlertUtil.showWarning("Truy Cập Bị Từ Chối", "Bạn không có quyền truy cập chức năng này.");
+            AlertUtil.showError("Truy Cập Bị Từ Chối", "Bạn không có quyền truy cập chức năng quản lý người dùng.");
+            handleShowDashboardHome(null); // Hoặc không làm gì
         }
     }
 }
