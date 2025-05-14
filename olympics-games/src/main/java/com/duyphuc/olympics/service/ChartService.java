@@ -93,7 +93,8 @@ public class ChartService {
                 "Medal Distribution for " + countryNoc + " - " + eventName,
                 dataset,
                 true, true, false);
-            PiePlot<String> plot = (PiePlot<String>) pieChart.getPlot();
+            @SuppressWarnings("unchecked")
+			PiePlot<String> plot = (PiePlot<String>) pieChart.getPlot();
             if (plot != null) {
                 plot.setNoDataMessage("No medal data available for this selection.");
                  plot.setSectionPaint("No Medal Data", Color.LIGHT_GRAY);

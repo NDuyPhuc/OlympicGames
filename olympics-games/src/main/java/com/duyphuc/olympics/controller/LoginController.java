@@ -1,7 +1,9 @@
 package com.duyphuc.olympics.controller;
 
+import com.duyphuc.olympics.MainApp; // Sẽ cần để MainApp gọi cleanup
 import com.duyphuc.olympics.animation.OlympicRingsAnimation;
 import com.duyphuc.olympics.animation.ParticleSystem;
+import com.duyphuc.olympics.exception.AuthenticationException; // THÊM IMPORT
 import com.duyphuc.olympics.model.User;
 import com.duyphuc.olympics.service.AuthService;
 import com.duyphuc.olympics.util.AlertUtil;
@@ -16,16 +18,18 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform; // THÊM IMPORT
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader; // THÊM IMPORT (nếu dùng để load MainDashboard)
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.input.KeyCode;   // <<--- THÊM IMPORT
-import javafx.scene.input.KeyEvent;  // <<--- THÊM IMPORT
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -34,6 +38,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.util.Timer; // THÊM IMPORT
+import java.util.TimerTask; // THÊM IMPORT
 
 public class LoginController {
     @FXML private StackPane rootPane;
@@ -42,12 +48,13 @@ public class LoginController {
     @FXML private VBox loginContainer;
     @FXML private MFXTextField usernameField;
     @FXML private MFXPasswordField passwordField;
-    @FXML private Label messageLabel;
+    @FXML private Label messageLabel; // Đổi tên từ errorLabel để chung chung hơn
     @FXML private MFXButton loginButton;
 
     private AuthService authService;
     private ParticleSystem particleSystem;
     private OlympicRingsAnimation olympicRingsAnimation;
+    private Timer countdownTimer; // Timer cho việc đếm ngược
 
     public LoginController() {
         this.authService = AuthService.getInstance();
@@ -55,16 +62,10 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-        // Apply depth effect to the login container
-        // Di chuyển khởi tạo particleSystem vào đây để đảm bảo nó được tạo sau khi canvas có scene
-        // Tuy nhiên, nếu bạn muốn particle system chạy ngay cả khi scene chưa sẵn sàng (ít khả năng),
-        // logic listener hiện tại của bạn cho particleCanvas là ổn.
-        // Nhưng để nhất quán với olympicRingsAnimation, bạn có thể làm tương tự.
-        // Hiện tại, tôi sẽ giữ nguyên logic của bạn cho particleCanvas.sceneProperty().
         particleCanvas.sceneProperty().addListener((observable, oldScene, newScene) -> {
-            if (newScene != null && particleSystem == null) { // Thêm kiểm tra particleSystem == null để tránh tạo lại
+            if (newScene != null && particleSystem == null) {
                 particleSystem = new ParticleSystem(particleCanvas);
-                particleSystem.startAnimation(); // Bắt đầu animation ở đây nếu muốn
+                particleSystem.startAnimation();
             }
         });
 
@@ -74,118 +75,56 @@ public class LoginController {
         loginContainerShadow.setOffsetY(5);
         loginContainer.setEffect(loginContainerShadow);
 
-        // Create and start the Olympic rings animation
         olympicRingsAnimation = new OlympicRingsAnimation(olympicLogoContainer);
         olympicRingsAnimation.startAnimation();
 
-        // Initialize and start the particle system (nếu chưa được start ở listener trên)
-        // Nếu bạn đã start trong listener, dòng này có thể không cần thiết hoặc gây start 2 lần.
-        // Để an toàn, nếu đã có listener, hãy để listener quản lý việc start.
-        // Nếu particleSystem có thể null ở đây, cần kiểm tra:
-        // if (particleSystem != null) {
-        //     particleSystem.startAnimation();
-        // } else {
-        //     // Xử lý trường hợp particleSystem chưa được khởi tạo (ví dụ: scene chưa có)
-        //     // Hoặc đảm bảo listener sẽ khởi tạo và start nó.
-        // }
-        // Dựa trên code gốc, bạn khởi tạo mới ở đây, nên dòng listener có thể chỉ cần gán, không start.
-        // Để đơn giản, tôi giả sử listener ở trên sẽ lo việc khởi tạo và start.
-        // Nếu bạn muốn khởi tạo ở đây:
-        if (particleSystem == null && particleCanvas.getScene() != null) { // Khởi tạo nếu chưa có và scene đã sẵn sàng
+        if (particleSystem == null && particleCanvas.getScene() != null) {
              particleSystem = new ParticleSystem(particleCanvas);
              particleSystem.startAnimation();
         }
 
-
-        // Add hover effect to login button
         loginButton.setOnMouseEntered(e -> {
             ScaleTransition scale = new ScaleTransition(Duration.millis(200), loginButton);
-            scale.setToX(1.05);
-            scale.setToY(1.05);
-            scale.play();
+            scale.setToX(1.05); scale.setToY(1.05); scale.play();
         });
-
         loginButton.setOnMouseExited(e -> {
             ScaleTransition scale = new ScaleTransition(Duration.millis(200), loginButton);
-            scale.setToX(1.0);
-            scale.setToY(1.0);
-            scale.play();
+            scale.setToX(1.0); scale.setToY(1.0); scale.play();
         });
 
-        // Create entrance animation for login form
         playEntranceAnimation();
 
-        // Hide message label initially
         messageLabel.setVisible(false);
         messageLabel.setManaged(false);
 
-        // === THÊM TÍNH NĂNG NHẤN ENTER ===
-        // Gán sự kiện onKeyPressed cho các trường nhập liệu
         usernameField.setOnKeyPressed(this::handleEnterKeyPressedOnFields);
         passwordField.setOnKeyPressed(this::handleEnterKeyPressedOnFields);
-
-        // Hoặc, nếu bạn muốn bắt Enter trên toàn bộ loginContainer (khi nó có focus)
-        // loginContainer.setOnKeyPressed(event -> {
-        //     if (event.getCode() == KeyCode.ENTER && !loginButton.isDisable()) {
-        //         loginButton.fire(); // Kích hoạt nút
-        //         event.consume();
-        //     }
-        // });
     }
 
-    // === HÀM XỬ LÝ NHẤN ENTER TRÊN CÁC TRƯỜNG NHẬP LIỆU ===
     private void handleEnterKeyPressedOnFields(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER) {
             if (!loginButton.isDisable()) {
-                // Tạo hiệu ứng "nhấn nút" trước khi thực hiện đăng nhập
                 playButtonPressAnimationAndLogin();
             }
-            event.consume(); // Ngăn sự kiện lan truyền
+            event.consume();
         }
     }
 
-    // === HÀM TẠO ANIMATION NHẤN NÚT VÀ GỌI ĐĂNG NHẬP ===
     private void playButtonPressAnimationAndLogin() {
-        // Animation nhấn nút (thu nhỏ rồi trở lại)
         ScaleTransition pressAnimation = new ScaleTransition(Duration.millis(100), loginButton);
-        pressAnimation.setToX(0.95);
-        pressAnimation.setToY(0.95);
-        pressAnimation.setAutoReverse(true);
-        pressAnimation.setCycleCount(2); // Đi xuống rồi quay lại
-
-        // Lưu trạng thái disable của nút trước khi chạy animation
-        // boolean wasButtonDisabled = loginButton.isDisable();
-        // loginButton.setDisable(true); // Tạm thời vô hiệu hóa nút trong khi animation chạy (tùy chọn)
-
-        pressAnimation.setOnFinished(e -> {
-            // loginButton.setDisable(wasButtonDisabled); // Khôi phục trạng thái disable
-            // Kích hoạt hành động của nút login sau khi animation hoàn tất
-            // Điều này sẽ gọi handleLogin(ActionEvent)
-            loginButton.fire();
-        });
-
+        pressAnimation.setToX(0.95); pressAnimation.setToY(0.95);
+        pressAnimation.setAutoReverse(true); pressAnimation.setCycleCount(2);
+        pressAnimation.setOnFinished(e -> loginButton.fire());
         pressAnimation.play();
     }
 
-
     private void playEntranceAnimation() {
-        // Initial state
-        loginContainer.setScaleX(0.8);
-        loginContainer.setScaleY(0.8);
-        loginContainer.setOpacity(0);
-
-        // Scale animation
+        loginContainer.setScaleX(0.8); loginContainer.setScaleY(0.8); loginContainer.setOpacity(0);
         ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(600), loginContainer);
-        scaleTransition.setToX(1.0);
-        scaleTransition.setToY(1.0);
-
-        // Fade animation
+        scaleTransition.setToX(1.0); scaleTransition.setToY(1.0);
         FadeTransition fadeTransition = new FadeTransition(Duration.millis(600), loginContainer);
         fadeTransition.setToValue(1.0);
-
-        // Play animations
-        scaleTransition.play();
-        fadeTransition.play();
+        scaleTransition.play(); fadeTransition.play();
     }
 
     @FXML
@@ -194,53 +133,75 @@ public class LoginController {
         String password = passwordField.getText();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showErrorMessage("Tên đăng nhập và mật khẩu không được để trống.");
+            showStyledMessage("Tên đăng nhập và mật khẩu không được để trống.", true);
             shakeLoginForm();
             return;
         }
 
-        loginButton.setDisable(true); // Vẫn giữ disable ở đây để tránh double click/enter
-        showInfoMessage("Đang đăng nhập...");
+        // Vô hiệu hóa các control và hiển thị thông báo "Đang đăng nhập..."
+        setLoginInProgress(true, "Đang đăng nhập...");
 
-        try {
-            final User user = authService.login(username, password);
-            if (user != null) {
-                messageLabel.setVisible(false);
-                messageLabel.setManaged(false);
-                playSuccessAnimation(() -> loadMainDashboard(event, user));
-            } else {
-                showErrorMessage("Tên đăng nhập hoặc mật khẩu không đúng.");
-                shakeLoginForm();
-                loginButton.setDisable(false); // Enable lại nút nếu đăng nhập thất bại
+        // Sử dụng Platform.runLater để đảm bảo authService.login chạy sau khi UI đã cập nhật
+        // (Hoặc thực hiện authService.login trên một luồng nền nếu nó tốn thời gian)
+        // Ở đây, giả định authService.login đủ nhanh để chạy trên UI thread sau khi UI cập nhật
+        // Nếu không, bạn cần Task<User>
+        Platform.runLater(() -> { // Để đảm bảo UI được cập nhật trước khi gọi login
+            try {
+                User user = authService.login(username, password);
+                // Nếu không có exception, đăng nhập thành công
+                Platform.runLater(() -> { // Cập nhật UI sau khi login thành công
+                    setLoginInProgress(false, null); // Ẩn thông báo "Đang đăng nhập"
+                    messageLabel.setVisible(false);
+                    messageLabel.setManaged(false);
+                    playSuccessAnimation(() -> loadMainDashboard(user)); // Truyền user vào
+                });
+
+            } catch (AuthenticationException e) {
+                Platform.runLater(() -> { // Cập nhật UI khi có lỗi xác thực
+                    setLoginInProgress(false, null);
+                    showStyledMessage(e.getMessage(), true); // Hiển thị thông báo lỗi từ exception
+                    shakeLoginForm();
+                    if (e.isAccountLocked()) {
+                        loginButton.setDisable(true); // Vô hiệu hóa nút login
+                        startCountdown(e.getLockDurationMillis() / 1000);
+                    } else {
+                        loginButton.setDisable(false); // Chỉ enable lại nếu không bị khóa
+                    }
+                });
+            } catch (Exception e) { // Các lỗi không mong muốn khác
+                Platform.runLater(() -> {
+                    setLoginInProgress(false, null);
+                    showStyledMessage("Đã xảy ra lỗi không xác định. Vui lòng thử lại.", true);
+                    AlertUtil.showError("Lỗi Hệ Thống", "Lỗi: " + e.getMessage());
+                    e.printStackTrace();
+                    loginButton.setDisable(false); // Enable lại nút
+                });
             }
-        } catch (Exception e) {
-            showErrorMessage("Đã xảy ra lỗi không xác định khi đăng nhập.");
-            AlertUtil.showError("Lỗi Không Xác Định", "Đã xảy ra lỗi: " + e.getMessage());
-            e.printStackTrace();
-            loginButton.setDisable(false); // Enable lại nút nếu có lỗi
-        }
-        // finally {
-            // loginButton.setDisable(false); // Bỏ finally ở đây, xử lý setDisable(false) trong các nhánh cụ thể
-        // }
+        });
     }
 
-    private void showErrorMessage(String message) {
+
+    private void showStyledMessage(String message, boolean isError) {
         messageLabel.setText(message);
-        messageLabel.setTextFill(Color.valueOf("#DF0024")); // Olympic red
+        messageLabel.setTextFill(isError ? Color.valueOf("#DF0024") : Color.valueOf("#0085C7")); // Đỏ cho lỗi, xanh cho thông tin
         messageLabel.setVisible(true);
         messageLabel.setManaged(true);
 
         FadeTransition fade = new FadeTransition(Duration.millis(200), messageLabel);
-        fade.setFromValue(0.0);
-        fade.setToValue(1.0);
-        fade.play();
+        fade.setFromValue(0.0); fade.setToValue(1.0); fade.play();
     }
 
-    private void showInfoMessage(String message) {
-        messageLabel.setText(message);
-        messageLabel.setTextFill(Color.valueOf("#0085C7")); // Olympic blue
-        messageLabel.setVisible(true);
-        messageLabel.setManaged(true);
+    private void setLoginInProgress(boolean inProgress, String statusMessage) {
+        loginButton.setDisable(inProgress);
+        usernameField.setDisable(inProgress);
+        passwordField.setDisable(inProgress);
+        if (inProgress && statusMessage != null) {
+            showStyledMessage(statusMessage, false); // Hiển thị thông báo trạng thái (không phải lỗi)
+        } else if (!inProgress) {
+            // Khi không còn inProgress, có thể ẩn messageLabel nếu không có lỗi nào khác được hiển thị
+            // Hoặc để messageLabel hiển thị lỗi cuối cùng/thông báo thành công (tùy logic)
+            // Hiện tại, các nhánh lỗi/thành công sẽ tự quản lý messageLabel
+        }
     }
 
     private void shakeLoginForm() {
@@ -250,58 +211,111 @@ public class LoginController {
 
     private Timeline createShakeAnimation(Node node) {
         Timeline timeline = new Timeline(
-            new KeyFrame(Duration.millis(0),
-                new KeyValue(node.translateXProperty(), 0)),
-            new KeyFrame(Duration.millis(100),
-                new KeyValue(node.translateXProperty(), -10)),
-            new KeyFrame(Duration.millis(200),
-                new KeyValue(node.translateXProperty(), 10)),
-            new KeyFrame(Duration.millis(300),
-                new KeyValue(node.translateXProperty(), -10)),
-            new KeyFrame(Duration.millis(400),
-                new KeyValue(node.translateXProperty(), 0))
+            new KeyFrame(Duration.millis(0), new KeyValue(node.translateXProperty(), 0)),
+            new KeyFrame(Duration.millis(100), new KeyValue(node.translateXProperty(), -10)),
+            new KeyFrame(Duration.millis(200), new KeyValue(node.translateXProperty(), 10)),
+            new KeyFrame(Duration.millis(300), new KeyValue(node.translateXProperty(), -10)),
+            new KeyFrame(Duration.millis(400), new KeyValue(node.translateXProperty(), 0))
         );
-        timeline.setCycleCount(1);
-        return timeline;
+        timeline.setCycleCount(1); return timeline;
     }
 
     private void playSuccessAnimation(Runnable onFinished) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(800), loginContainer);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
+        fadeOut.setFromValue(1.0); fadeOut.setToValue(0.0);
         fadeOut.setOnFinished(e -> {
-            if (onFinished != null) {
-                onFinished.run();
-            }
+            if (onFinished != null) { onFinished.run(); }
         });
         fadeOut.play();
     }
 
-    private void loadMainDashboard(ActionEvent event, User loggedInUser) {
+    private void loadMainDashboard(User loggedInUser) { // Bỏ ActionEvent, nhận User
         try {
-            Stage currentStage = (Stage) loginButton.getScene().getWindow(); // Lấy stage từ loginButton (hoặc bất kỳ node nào trong scene)
-
-            Parent root = FxmlLoaderUtil.loadFXML("/com/duyphuc/olympics/fxml/MainDashboardView.fxml");
-
-            Stage mainStage = new Stage();
-            mainStage.setTitle("Olympic Games Medal Analyzer - Dashboard");
-            mainStage.setScene(new Scene(root));
-            mainStage.setMaximized(true);
-            mainStage.show();
-
-            // Stop animations before closing the stage
-            if (particleSystem != null) { // Kiểm tra null trước khi gọi stop
-                particleSystem.stopAnimation();
-            }
-            if (olympicRingsAnimation != null) { // Kiểm tra null
-                olympicRingsAnimation.stopAnimation();
+            // Stage currentStage = (Stage) loginButton.getScene().getWindow();
+            // Lấy stage từ MainApp để đảm bảo tính nhất quán
+            Stage currentStage = MainApp.getPrimaryStage();
+            if (currentStage == null) { // Fallback nếu MainApp.getPrimaryStage() trả về null
+                 currentStage = (Stage) loginButton.getScene().getWindow();
             }
 
-            currentStage.close();
+
+            // Sử dụng FXMLLoader để có thể truyền AuthService cho MainDashboardController
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/duyphuc/olympics/fxml/MainDashboardView.fxml"));
+            Parent root = loader.load();
+
+            // MainDashboardController dashboardController = loader.getController();
+            // dashboardController.setAuthService(authService); // Giả sử có phương thức này
+
+            // HOẶC, MainDashboardController sẽ tự lấy instance của AuthService
+            // Việc này đã được làm trong initialize của MainDashboardController
+
+            Scene mainScene = new Scene(root);
+            currentStage.setScene(mainScene); // Sử dụng lại stage hiện tại
+            currentStage.setTitle("Olympic Games Medal Analyzer - Dashboard");
+            currentStage.setMaximized(true); // Mở rộng tối đa
+            currentStage.centerOnScreen();
+            // Không cần currentStage.show() nữa nếu đã show từ MainApp
+            // và chúng ta chỉ thay đổi scene.
+
+            // Stop animations
+            cleanupAnimations(); // Gọi hàm dọn dẹp animation
+
         } catch (IOException e) {
             e.printStackTrace();
-            showErrorMessage("Lỗi: Không thể tải màn hình chính.");
+            showStyledMessage("Lỗi: Không thể tải màn hình chính.", true);
             AlertUtil.showError("Lỗi Tải Giao Diện", "Không thể tải màn hình chính của ứng dụng.");
+        }
+    }
+
+    private void startCountdown(long seconds) {
+        if (countdownTimer != null) {
+            countdownTimer.cancel();
+        }
+        countdownTimer = new Timer(true);
+        long[] remainingSeconds = {seconds};
+
+        // Cập nhật messageLabel ngay lập tức
+        Platform.runLater(() -> showStyledMessage("Tài khoản bị khóa. Thử lại sau: " + remainingSeconds[0] + "s", true));
+
+
+        countdownTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    remainingSeconds[0]--;
+                    if (remainingSeconds[0] > 0) {
+                        showStyledMessage("Tài khoản bị khóa. Thử lại sau: " + remainingSeconds[0] + "s", true);
+                    } else {
+                        showStyledMessage("Thời gian khóa đã hết. Bạn có thể thử đăng nhập lại.", false);
+                        loginButton.setDisable(false);
+                        if (countdownTimer != null) countdownTimer.cancel();
+                    }
+                });
+            }
+        }, 1000, 1000);
+    }
+
+    // Phương thức để dừng animations và timer
+    public void cleanupAnimationsAndTimer() {
+        if (particleSystem != null) {
+            particleSystem.stopAnimation();
+        }
+        if (olympicRingsAnimation != null) {
+            olympicRingsAnimation.stopAnimation();
+        }
+        if (countdownTimer != null) {
+            countdownTimer.cancel();
+            countdownTimer = null; // Quan trọng: đặt lại thành null
+        }
+    }
+
+    // Sửa tên cho rõ ràng hơn
+    private void cleanupAnimations() {
+        if (particleSystem != null) {
+            particleSystem.stopAnimation();
+        }
+        if (olympicRingsAnimation != null) {
+            olympicRingsAnimation.stopAnimation();
         }
     }
 }
