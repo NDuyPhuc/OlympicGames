@@ -17,8 +17,13 @@ OlympicGamesMedalAnalyzer/
 │   │   │               │   ├── MainDashboardController.java
 │   │   │               │   ├── MedalManagementController.java
 │   │   │               │   ├── UserProfileController.java
-│   │   │               │   ├── AdminUserManagementController.java // (Extra)
+│   │   │               │   ├── AdminUserManagementController.java
+│   │   │               │   ├── ReportController.java 
 │   │   │               │   └── ChartViewController.java
+│   │   │               │
+│   │   │               │── animation/
+│   │   │               │   ├── OlympicRingsAnimation.java
+│   │   │               │   └── ParticleSystem.java 
 │   │   │               │
 │   │   │               ├── model/              // Chứa các lớp thực thể (POJO)
 │   │   │               │   ├── User.java
@@ -34,6 +39,7 @@ OlympicGamesMedalAnalyzer/
 │   │   │               │   ├── AuthService.java    // Xử lý đăng nhập, session
 │   │   │               │   ├── MedalService.java   // Xử lý logic dữ liệu huy chương, tính toán
 │   │   │               │   ├── ChartService.java   // Tạo và chuẩn bị dữ liệu cho JFreeChart
+│   │   │               │   ├── ReportService.java   // Tạo và chuẩn bị dữ liệu cho JFreeChart
 │   │   │               │   └── ReportService.java  // (Extra) Tạo các báo cáo, derivable data
 │   │   │               │
 │   │   │               ├── db/                 // Quản lý kết nối CSDL
@@ -57,15 +63,26 @@ OlympicGamesMedalAnalyzer/
 │   │                   │   ├── LoginView.fxml
 │   │                   │   ├── MainDashboardView.fxml
 │   │                   │   ├── MedalManagementView.fxml
+│   │                   │   ├── ReportView.fxml
 │   │                   │   ├── UserProfileView.fxml
-│   │                   │   ├── AdminUserManagementView.fxml // (Extra)
+│   │                   │   ├── UserFormDialog.fxml
+│   │                   │   ├── AdminUserManagementView.fxml 
 │   │                   │   └── ChartView.fxml
 │   │                   │
 │   │                   ├── css/                // (Optional) Chứa file CSS cho giao diện
-│   │                   │   └── styles.css
+│   │                   │   ├── AdminUserManagementView.css
+│   │                   │   ├── login.css
+│   │                   │   ├── medal_management_styles.css
+│   │                   │   ├── ReportView.css
+│   │                   │   └── UserProfileStyles.css
 │   │                   │
 │   │                   └── images/             // (Optional) Chứa hình ảnh
-│   │                       └── app_icon.png
+│   │                      ├── add_user_icon.png
+│   │                      ├── delete_icon.png
+│   │                      ├── edit_icon.png
+│   │                      ├── Olympic_rings.png
+│   │                      ├── refresh_icon.png
+│   │                      └── users_icon.png  
 │   │
 │   └── test/                   // (Optional but recommended) Chứa các lớp test
 │       └── java/
