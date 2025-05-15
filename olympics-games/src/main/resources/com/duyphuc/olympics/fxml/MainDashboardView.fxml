@@ -28,6 +28,7 @@
           <Menu mnemonicParsing="false" text="Thống kê">
             <items>
               <MenuItem fx:id="viewChartsMenuItem" mnemonicParsing="false" onAction="#handleViewCharts" text="Xem Biểu đồ" />
+              <MenuItem fx:id="viewReportsMenuItem" mnemonicParsing="false" onAction="#handleViewReports" text="Xem Báo cáo" />
             </items>
           </Menu>
           <Menu fx:id="adminMenu" mnemonicParsing="false" text="Quản trị (Admin)">

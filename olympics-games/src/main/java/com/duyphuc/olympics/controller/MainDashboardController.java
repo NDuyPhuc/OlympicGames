@@ -126,7 +126,12 @@ public class MainDashboardController {
             updateWelcomeMessage();
         }
     }
-
+    
+    @FXML
+    void handleViewReports(ActionEvent event) {
+        loadViewIntoContentArea("/com/duyphuc/olympics/fxml/ReportView.fxml");
+    }
+    
     @FXML
     void handleShowProfile(ActionEvent event) {
         try {

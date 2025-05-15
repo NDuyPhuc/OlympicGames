@@ -1,0 +1,120 @@
+/* ReportView.css */
+
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif; /* Font chữ chung cho ứng dụng */
+    -fx-background-color: #f4f6f8; /* Màu nền nhẹ nhàng */
+}
+
+.label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #333333;
+}
+
+.header-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50; /* Màu xanh đậm */
+    -fx-padding-bottom: 10px;
+}
+
+.sub-header-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #34495e; /* Màu xanh xám */
+}
+
+.combo-box {
+    -fx-font-size: 13px;
+    -fx-pref-height: 35px;
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7; /* Viền xám nhạt */
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.combo-box .list-cell { /* Style cho các item trong dropdown */
+    -fx-font-size: 13px;
+}
+
+.text-field, .spinner {
+    -fx-font-size: 13px;
+    -fx-pref-height: 35px;
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.button {
+    -fx-font-size: 13px;
+    -fx-pref-height: 35px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4px;
+    -fx-padding: 5px 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2); /* Đổ bóng nhẹ */
+}
+
+.button:hover {
+    -fx-opacity: 0.9; /* Hiệu ứng khi hover */
+}
+
+.primary-button { /* Nút chính */
+    -fx-background-color: #3498db; /* Màu xanh dương */
+}
+.primary-button:hover {
+     -fx-background-color: #2980b9;
+}
+
+
+.success-button { /* Nút thành công/xuất file */
+    -fx-background-color: #2ecc71; /* Màu xanh lá */
+}
+.success-button:hover {
+    -fx-background-color: #27ae60;
+}
+
+.text-area {
+    -fx-font-family: "Consolas", "Courier New", monospace; /* Font chữ code cho báo cáo */
+    -fx-font-size: 13px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe4ea;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: #dfe4ea;
+    -fx-border-radius: 4px;
+}
+.scroll-pane > .viewport { /* Loại bỏ viền của viewport bên trong ScrollPane */
+   -fx-background-color: transparent;
+}
+
+
+/* CSS cho GridPane để căn chỉnh */
+.report-grid-pane {
+    -fx-hgap: 15px;
+    -fx-vgap: 12px;
+    -fx-padding: 10px 0; /* Padding trên dưới cho grid */
+}
+
+.report-grid-pane .label {
+    -fx-alignment: CENTER_LEFT; /* Căn lề trái cho label trong grid */
+    -fx-padding-top: 8px; /* Để label căn giữa với control */
+}
+
+/* CSS cho ProgressIndicator */
+.progress-indicator {
+    -fx-progress-color: #3498db; /* Màu của indicator */
+}
+
+/* CSS cho VBox chứa các controls */
+.controls-vbox {
+    -fx-padding: 20px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe4ea;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 3);
+}

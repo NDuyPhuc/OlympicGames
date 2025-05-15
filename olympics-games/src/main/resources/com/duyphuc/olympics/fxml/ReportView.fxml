@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="reportViewPane" spacing="20.0" stylesheets="@../css/ReportView.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duyphuc.olympics.controller.ReportController">
+   <padding>
+      <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+   </padding>
+   <children>
+      <Label styleClass="header-label" text="Báo Cáo và Phân Tích Dữ Liệu Olympic" />
+
+      <VBox styleClass="controls-vbox" spacing="15.0">
+         <children>
+            <GridPane styleClass="report-grid-pane">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="150.0" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+              </columnConstraints>
+              <!-- Các RowConstraints có thể không cần thiết nếu bạn chỉ định vị trí bằng rowIndex -->
+               <children>
+                  <Label text="Loại Báo Cáo:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <ComboBox fx:id="reportTypeComboBox" maxWidth="Infinity" promptText="Chọn loại báo cáo" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                  <Label fx:id="olympicEventLabel" text="Kỳ Olympic:" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <ComboBox fx:id="olympicEventComboBox" maxWidth="Infinity" promptText="Chọn kỳ Olympic" visible="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                  <Label fx:id="paramNocLabel" text="Mã Quốc Gia (NOC):" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                  <TextField fx:id="paramNocInput" promptText="Ví dụ: USA" visible="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                  <Label fx:id="paramNLabel" text="Số lượng (N):" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                  <Spinner fx:id="paramNSpinner" editable="true" initialValue="10" max="100" min="1" prefWidth="120.0" visible="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               </children>
+            </GridPane>
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+               <children>
+                  <Button fx:id="generateReportButton" onAction="#handleGenerateReport" styleClass="primary-button" text="Tạo Báo Cáo" />
+                  <Button fx:id="exportReportButton" onAction="#handleExportReport" styleClass="success-button" text="Xuất Báo Cáo (TXT)" visible="false" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+
+
+      <Label styleClass="sub-header-label" text="Kết Quả Báo Cáo:">
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </Label>
+      <StackPane VBox.vgrow="ALWAYS">
+         <children>
+            <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="scroll-pane">
+               <content>
+                  <TextArea fx:id="reportOutputTextArea" editable="false" wrapText="true" />
+               </content>
+            </ScrollPane>
+            <ProgressIndicator fx:id="loadingIndicator" maxHeight="60.0" maxWidth="60.0" visible="false" />
+         </children>
+      </StackPane>
+   </children>
+</VBox>
