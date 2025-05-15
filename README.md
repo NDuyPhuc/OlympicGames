@@ -1,4 +1,4 @@
-# OlympicGames
+![edit_icon](https://github.com/user-attachments/assets/d3d69b8d-ae92-44d2-8ab2-5a489ef42eb1)# OlympicGames
 
 
 ```
@@ -72,6 +72,8 @@ OlympicGamesMedalAnalyzer/
 │   │                   ├── css/                // (Optional) Chứa file CSS cho giao diện
 │   │                   │   ├── AdminUserManagementView.css
 │   │                   │   ├── login.css
+│   │                   │   ├── ChartView.css
+│   │                   │   ├── dashboard_styles.css
 │   │                   │   ├── medal_management_styles.css
 │   │                   │   ├── ReportView.css
 │   │                   │   └── UserProfileStyles.css
