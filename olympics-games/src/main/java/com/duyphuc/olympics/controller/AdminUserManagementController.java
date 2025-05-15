@@ -115,7 +115,7 @@ public class AdminUserManagementController {
             TextField txtEmailDialog = (TextField) dialogPane.lookup("#txtEmailDialog");
             PasswordField pfPasswordDialog = (PasswordField) dialogPane.lookup("#pfPasswordDialog");
             PasswordField pfConfirmPasswordDialog = (PasswordField) dialogPane.lookup("#pfConfirmPasswordDialog");
-            ComboBox<String> cmbRoleDialog = (ComboBox<String>) dialogPane.lookup("#cmbRoleDialog");
+	        ComboBox<String> cmbRoleDialog = (ComboBox<String>) dialogPane.lookup("#cmbRoleDialog");
             Label lblPasswordDialog = (Label) dialogPane.lookup("#lblPasswordDialog"); // Để thay đổi text
 
             cmbRoleDialog.setItems(FXCollections.observableArrayList("ADMIN", "STAFF")); // Hoặc một enum Roles

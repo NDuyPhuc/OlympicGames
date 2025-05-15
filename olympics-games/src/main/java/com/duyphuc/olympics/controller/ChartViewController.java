@@ -6,18 +6,22 @@ import com.duyphuc.olympics.service.ChartService;
 import com.duyphuc.olympics.service.MedalService;
 import com.duyphuc.olympics.util.AlertUtil;
 
+import javafx.application.Platform; // For Platform.runLater
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task; // <<<--- IMPORT Task
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-// import javafx.scene.control.Label; // Không thấy sử dụng trực tiếp trong FXML, có thể xóa
-import javafx.scene.control.ProgressIndicator; // <<<--- IMPORT ProgressIndicator
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane; // <<<--- IMPORT StackPane (hoặc một Pane khác để chứa ProgressIndicator)
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.jfree.chart.ChartPanel;
 
 import javax.swing.SwingUtilities;
@@ -27,6 +31,7 @@ import java.util.Map;
 
 public class ChartViewController {
 
+    // ... (all your @FXML declarations remain the same) ...
     @FXML private ComboBox<String> chartTypeComboBox;
     @FXML private ComboBox<OlympicEvent> olympicEventComboBox;
     @FXML private ComboBox<String> countryComboBox;
@@ -39,199 +44,282 @@ public class ChartViewController {
     @FXML private HBox topNControls;
     @FXML private HBox medalTypeControls;
 
+    @FXML private VBox controlsPanel;
+    @FXML private Label dataScopeLabel;
+    @FXML private VBox olympicEventControlsContainer;
+    @FXML private Label parametersLabel;
+    @FXML private VBox parametersControlsContainer;
+
     @FXML private Button generateChartButton;
     @FXML private SwingNode swingNodeChart;
-    @FXML private StackPane chartContainerPane; // <<<--- THÊM StackPane trong FXML để chứa SwingNode và ProgressIndicator
+    @FXML private StackPane chartContainerPane;
+
 
     private MedalService medalService;
     private ChartService chartService;
 
     private ObservableList<OlympicEvent> olympicEventsList;
     private ObservableList<String> nocList = FXCollections.observableArrayList();
-    private ProgressIndicator loadingIndicator; // <<<--- Biến cho ProgressIndicator
+    private ProgressIndicator loadingIndicator;
 
     public void initialize() {
         medalService = new MedalService();
         chartService = new ChartService();
 
-        // Khởi tạo ProgressIndicator
         loadingIndicator = new ProgressIndicator();
-        loadingIndicator.setVisible(false); // Ban đầu ẩn
-        // Đảm bảo chartContainerPane đã được khởi tạo từ FXML trước khi thêm
-        // Nếu chartContainerPane chưa có trong FXML, bạn cần tạo nó hoặc dùng một Pane đã có
+        loadingIndicator.setVisible(false);
+        loadingIndicator.setMaxSize(100, 100);
+
         if (chartContainerPane != null) {
-             // Đặt ProgressIndicator lên trên SwingNode
             chartContainerPane.getChildren().add(loadingIndicator);
+            StackPane.setAlignment(loadingIndicator, Pos.CENTER);
         } else {
             System.err.println("ChartViewController: chartContainerPane is null. ProgressIndicator might not be visible.");
-            // Nếu không có chartContainerPane, bạn có thể đặt loadingIndicator ở vị trí khác
-            // hoặc đơn giản là không hiển thị nó nếu không có Pane phù hợp.
         }
 
-
-        // Populate Chart Types
         chartTypeComboBox.setItems(FXCollections.observableArrayList(
                 "Top N Countries (Bar Chart)",
                 "Country Medal Distribution (Pie Chart)",
                 "Country Medal Trend (Line Chart)"
         ));
-        chartTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> updateVisibleControls(newVal));
-        chartTypeComboBox.getSelectionModel().selectFirst();
+        chartTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            updateVisibleControls(newVal);
+            validateInputsAndToggleButtonState(); // <<< ADDED
+        });
+        // chartTypeComboBox.getSelectionModel().selectFirst(); // This will be done after updateVisibleControls for initial setup
 
-        // Populate Sort By options
         sortByComboBox.setItems(FXCollections.observableArrayList("Total", "Gold", "Silver", "Bronze"));
         sortByComboBox.getSelectionModel().selectFirst();
+        sortByComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
 
-        // Populate Medal Type options
         medalTypeComboBox.setItems(FXCollections.observableArrayList("Total", "Gold", "Silver", "Bronze"));
         medalTypeComboBox.getSelectionModel().selectFirst();
+        medalTypeComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
 
-        // Load Olympic Events (có thể cũng đưa ra luồng nền nếu danh sách quá lớn)
-        // Hiện tại, việc load này thường nhanh nên có thể giữ ở đây
+
+        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactory =
+            new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 50, 10);
+        topNSpinner.setValueFactory(valueFactory);
+        topNSpinner.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
+
+
         try {
             olympicEventsList = FXCollections.observableArrayList(medalService.getEvents());
             olympicEventComboBox.setItems(olympicEventsList);
             if (!olympicEventsList.isEmpty()) {
-                olympicEventComboBox.getSelectionModel().selectFirst();
-                loadNOCsForSelectedEvent();
+                olympicEventComboBox.getSelectionModel().selectFirst(); // This will trigger its listener
+            } else {
+                validateInputsAndToggleButtonState(); // If no events, validate button state
             }
         } catch (SQLException e) {
             AlertUtil.showError("Database Error", "Failed to load Olympic events: " + e.getMessage());
+            validateInputsAndToggleButtonState(); // Validate button state on error
         }
 
         olympicEventComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldEvent, newEvent) -> {
             if (newEvent != null) {
-                loadNOCsForSelectedEvent();
+                loadNOCsForSelectedEvent(); // This will eventually call validateInputsAndToggleButtonState
+            } else {
+                countryComboBox.getItems().clear();
+                countryComboBox.setValue(null);
+                validateInputsAndToggleButtonState(); // <<< ADDED
             }
         });
+        countryComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
+
+        chartTypeComboBox.getSelectionModel().selectFirst(); // Select first chart type AFTER all listeners are set up
+        // updateVisibleControls is called by chartTypeComboBox listener
+        // validateInputsAndToggleButtonState is also called by chartTypeComboBox listener
     }
 
     private void loadNOCsForSelectedEvent() {
         OlympicEvent selectedEvent = olympicEventComboBox.getValue();
         if (selectedEvent != null) {
-            // Việc load NOCs cũng có thể được đưa ra luồng nền nếu danh sách quá dài
-            // và gây trễ khi chọn OlympicEvent.
-            // Hiện tại giữ đơn giản.
-            try {
-                nocList.setAll(medalService.getAllNOCsForEvent(selectedEvent));
-                countryComboBox.setItems(nocList);
-                if(!nocList.isEmpty()){
-                    countryComboBox.getSelectionModel().selectFirst();
-                } else {
-                    countryComboBox.getItems().clear(); // Xóa NOCs cũ nếu event mới không có NOC
-                    countryComboBox.setValue(null);     // Reset giá trị đang chọn
+            // Temporarily disable button while NOCs are loading for the selected event,
+            // especially if the current chart requires NOC
+            generateChartButton.setDisable(true);
+            loadingIndicator.setVisible(true); // Show generic loading for NOCs too
+
+            Task<List<String>> loadNocsTask = new Task<>() {
+                @Override
+                protected List<String> call() throws Exception {
+                    return medalService.getAllNOCsForEvent(selectedEvent);
                 }
-            } catch (SQLException e) {
-                 AlertUtil.showError("Database Error", "Failed to load NOCs for event " + selectedEvent.getEventName() + ": " + e.getMessage());
-            }
+
+                @Override
+                protected void succeeded() {
+                    nocList.setAll(getValue());
+                    countryComboBox.setItems(nocList);
+                    if (!nocList.isEmpty()) {
+                        countryComboBox.getSelectionModel().selectFirst();
+                    } else {
+                        countryComboBox.getItems().clear();
+                        countryComboBox.setValue(null);
+                    }
+                    Platform.runLater(() -> { // Ensure UI updates are on JavaFX thread
+                        loadingIndicator.setVisible(false);
+                        validateInputsAndToggleButtonState(); // <<< Crucial: validate after NOCs are loaded/selected
+                    });
+                }
+
+                @Override
+                protected void failed() {
+                    Platform.runLater(() -> {
+                        AlertUtil.showError("Database Error", "Failed to load NOCs for event " + selectedEvent.getEventName() + ": " + getException().getMessage());
+                        countryComboBox.getItems().clear();
+                        countryComboBox.setValue(null);
+                        loadingIndicator.setVisible(false);
+                        validateInputsAndToggleButtonState(); // <<< Crucial: validate even on failure
+                    });
+                }
+            };
+            new Thread(loadNocsTask).start();
         } else {
             countryComboBox.getItems().clear();
             countryComboBox.setValue(null);
+            validateInputsAndToggleButtonState();
         }
     }
 
-
     private void updateVisibleControls(String chartType) {
-        // ... (giữ nguyên code của bạn) ...
         if (chartType == null) return;
 
-        olympicEventControls.setVisible(true);
-        olympicEventControls.setManaged(true);
-        countryControls.setVisible(true);
-        countryControls.setManaged(true);
-        topNControls.setVisible(true);
-        topNControls.setManaged(true);
-        medalTypeControls.setVisible(true);
-        medalTypeControls.setManaged(true);
+        // Default visibility
+        dataScopeLabel.setVisible(true); dataScopeLabel.setManaged(true);
+        olympicEventControlsContainer.setVisible(true); olympicEventControlsContainer.setManaged(true);
+        parametersLabel.setVisible(true); parametersLabel.setManaged(true);
+        parametersControlsContainer.setVisible(true); parametersControlsContainer.setManaged(true);
 
+        olympicEventControls.setVisible(true); olympicEventControls.setManaged(true);
+        countryControls.setVisible(true); countryControls.setManaged(true);
+        topNControls.setVisible(true); topNControls.setManaged(true);
+        medalTypeControls.setVisible(true); medalTypeControls.setManaged(true);
 
         switch (chartType) {
             case "Top N Countries (Bar Chart)":
-                countryControls.setVisible(false);
-                countryControls.setManaged(false);
-                medalTypeControls.setVisible(false);
-                medalTypeControls.setManaged(false);
+                countryControls.setVisible(false); countryControls.setManaged(false);
+                medalTypeControls.setVisible(false); medalTypeControls.setManaged(false);
                 break;
             case "Country Medal Distribution (Pie Chart)":
-                topNControls.setVisible(false);
-                topNControls.setManaged(false);
-                medalTypeControls.setVisible(false);
-                medalTypeControls.setManaged(false);
+                topNControls.setVisible(false); topNControls.setManaged(false);
+                medalTypeControls.setVisible(false); medalTypeControls.setManaged(false);
                 break;
             case "Country Medal Trend (Line Chart)":
-                olympicEventControls.setVisible(false); // Trend is across all available events
-                olympicEventControls.setManaged(false);
-                topNControls.setVisible(false);
-                topNControls.setManaged(false);
-                if (olympicEventsList != null && !olympicEventsList.isEmpty() && (countryComboBox.getItems() == null || countryComboBox.getItems().isEmpty())) {
-                     // Cân nhắc load danh sách tất cả NOCs một lần cho Trend chart
-                     // Hoặc để người dùng tự nhập
-                     // Hiện tại, nếu chọn Olympic Event trước đó, NOC list sẽ còn
-                     // Nếu không, có thể cần cơ chế load NOCs riêng cho Trend
-                }
-                break;
-            default:
+                olympicEventControls.setVisible(false); olympicEventControls.setManaged(false);
+                topNControls.setVisible(false); topNControls.setManaged(false);
                 break;
         }
+
+        // Adjust container visibility based on children
+        if (!olympicEventControls.isManaged() && !countryControls.isManaged()) {
+            dataScopeLabel.setVisible(false); dataScopeLabel.setManaged(false);
+            olympicEventControlsContainer.setVisible(false); olympicEventControlsContainer.setManaged(false);
+        }
+        if (!topNControls.isManaged() && !medalTypeControls.isManaged()) {
+            parametersLabel.setVisible(false); parametersLabel.setManaged(false);
+            parametersControlsContainer.setVisible(false); parametersControlsContainer.setManaged(false);
+        }
+        // No need to call validateInputsAndToggleButtonState() here,
+        // as it's called by the chartTypeComboBox listener which triggers this method.
     }
+
+    private void validateInputsAndToggleButtonState() {
+        boolean disableButton = false;
+        String selectedChartType = chartTypeComboBox.getValue();
+
+        if (selectedChartType == null) {
+            disableButton = true;
+        } else {
+            switch (selectedChartType) {
+                case "Top N Countries (Bar Chart)":
+                    if (olympicEventComboBox.getValue() == null || topNSpinner.getValue() == null || sortByComboBox.getValue() == null) {
+                        disableButton = true;
+                    }
+                    break;
+                case "Country Medal Distribution (Pie Chart)":
+                    if (olympicEventComboBox.getValue() == null || countryComboBox.getValue() == null || countryComboBox.getValue().trim().isEmpty()) {
+                        disableButton = true;
+                    }
+                    break;
+                case "Country Medal Trend (Line Chart)":
+                    if (countryComboBox.getValue() == null || countryComboBox.getValue().trim().isEmpty() || medalTypeComboBox.getValue() == null) {
+                        disableButton = true;
+                    }
+                    break;
+                default:
+                    disableButton = true; // Unknown chart type
+                    break;
+            }
+        }
+
+        // Also disable if a chart generation task is already running
+        if (loadingIndicator.isVisible()) {
+             // If loadingIndicator is for chart generation (not NOC load), keep button disabled.
+             // This check is tricky. For now, if loadingIndicator is visible, assume something is loading.
+            disableButton = true;
+        }
+        generateChartButton.setDisable(disableButton);
+    }
+
 
     @FXML
     private void handleGenerateChart() {
-        String selectedChartType = chartTypeComboBox.getValue();
-        OlympicEvent selectedEvent = olympicEventComboBox.getValue(); // Có thể null nếu không được chọn
-        String selectedNOC = countryComboBox.getValue(); // Có thể null
-        Integer nValue = topNSpinner.getValue(); // Spinner trả về Integer
-        String sortBy = sortByComboBox.getValue();
-        String medalType = medalTypeComboBox.getValue();
+        // Validation is now primarily handled by validateInputsAndToggleButtonState()
+        // which should prevent this method from being called with invalid inputs.
+        // However, defensive checks here are still good practice.
 
-        if (selectedChartType == null) {
-            AlertUtil.showWarning("Input Error", "Please select a chart type.");
+        String selectedChartType = chartTypeComboBox.getValue();
+        // Get values based on visibility/management (as before)
+        OlympicEvent selectedEvent = olympicEventControls.isManaged() ? olympicEventComboBox.getValue() : null;
+        String selectedNOC = countryControls.isManaged() ? countryComboBox.getValue() : null;
+        Integer nValue = topNControls.isManaged() ? topNSpinner.getValue() : null;
+        String sortBy = topNControls.isManaged() ? sortByComboBox.getValue() : null;
+        String medalType = medalTypeControls.isManaged() ? medalTypeComboBox.getValue() : null;
+
+        // Redundant check, but safe
+        if (generateChartButton.isDisabled()) {
+            AlertUtil.showWarning("Input Error", "Please ensure all required fields are selected for the chosen chart type.");
             return;
         }
 
-        // Hiển thị ProgressIndicator và vô hiệu hóa nút
         loadingIndicator.setVisible(true);
-        generateChartButton.setDisable(true);
-        swingNodeChart.setContent(null); // Xóa biểu đồ cũ trong khi tải
+        generateChartButton.setDisable(true); // Explicitly disable during task
+        swingNodeChart.setContent(null);
 
         Task<ChartPanel> chartGenerationTask = new Task<>() {
             @Override
-            protected ChartPanel call() throws Exception { // SQLException sẽ được coi là Exception
-                // Các thao tác nặng sẽ được thực hiện ở đây (trong luồng nền)
+            protected ChartPanel call() throws Exception {
                 ChartPanel panel = null;
+                // Re-check inputs inside the task as a final safeguard or for specific error messages
                 switch (selectedChartType) {
                     case "Top N Countries (Bar Chart)":
-                        if (selectedEvent == null) {
-                            updateMessage("Lỗi: Vui lòng chọn một kỳ Olympic."); // Gửi thông báo cho onFailed/onSucceeded
-                            throw new IllegalArgumentException("Olympic event not selected.");
-                        }
+                        if (selectedEvent == null) throw new IllegalArgumentException("Olympic event not selected.");
+                        if (nValue == null || sortBy == null) throw new IllegalArgumentException("Top N or Sort By not selected.");
                         List<MedalEntry> topNData = medalService.getTopNCountriesForEvent(selectedEvent, nValue, sortBy);
                         if (topNData.isEmpty()) {
-                            updateMessage("Không có dữ liệu huy chương cho tiêu chí đã chọn.");
-                            return null; // Trả về null để onSucceeded xử lý
+                            updateMessage("Không có dữ liệu huy chương cho tiêu chí đã chọn tại " + selectedEvent.getEventName() + ".");
+                            return null;
                         }
                         panel = chartService.createTopNCountriesBarChart(topNData, selectedEvent, nValue, sortBy);
                         break;
 
                     case "Country Medal Distribution (Pie Chart)":
                         if (selectedEvent == null || selectedNOC == null || selectedNOC.trim().isEmpty()) {
-                            updateMessage("Lỗi: Vui lòng chọn một kỳ Olympic và một quốc gia.");
-                            throw new IllegalArgumentException("Olympic event or NOC not selected.");
+                             throw new IllegalArgumentException("Olympic event or NOC not selected.");
                         }
                         MedalEntry countryData = medalService.getMedalDataForCountryInEvent(selectedEvent, selectedNOC);
-                        // ChartService đã xử lý countryData == null, nên không cần kiểm tra ở đây nữa
+                        if (countryData == null || (countryData.getGold() == 0 && countryData.getSilver() == 0 && countryData.getBronze() == 0)) {
+                            updateMessage("Không có dữ liệu huy chương cho " + selectedNOC + " tại " + selectedEvent.getEventName() + ".");
+                            return null;
+                        }
                         panel = chartService.createMedalDistributionPieChart(countryData, selectedEvent);
                         break;
 
                     case "Country Medal Trend (Line Chart)":
-                        if (selectedNOC == null || selectedNOC.trim().isEmpty()) {
-                            updateMessage("Lỗi: Vui lòng chọn hoặc nhập mã quốc gia (NOC).");
-                            throw new IllegalArgumentException("NOC not selected for trend chart.");
-                        }
-                        if (olympicEventsList == null || olympicEventsList.isEmpty()) {
-                            updateMessage("Lỗi: Không có dữ liệu các kỳ Olympic để phân tích xu hướng.");
-                            throw new IllegalStateException("Olympic events list is empty for trend analysis.");
-                        }
+                        if (selectedNOC == null || selectedNOC.trim().isEmpty()) throw new IllegalArgumentException("NOC not selected for trend chart.");
+                        if (medalType == null) throw new IllegalArgumentException("Medal type not selected for trend chart.");
+                        if (olympicEventsList == null || olympicEventsList.isEmpty()) throw new IllegalStateException("Olympic events list is empty for trend analysis.");
+                        
                         Map<Integer, Integer> trendData = medalService.getMedalTrendForCountry(selectedNOC, olympicEventsList, medalType);
                         if (trendData.isEmpty()) {
                             updateMessage("Không có dữ liệu xu hướng huy chương cho " + selectedNOC + " với loại " + medalType + ".");
@@ -249,33 +337,39 @@ public class ChartViewController {
             if (resultPanel != null) {
                 setChart(resultPanel);
             } else {
-                // Hiển thị thông báo nếu task trả về null (ví dụ: không có dữ liệu)
                 String message = chartGenerationTask.getMessage();
-                if (message != null && !message.isEmpty() && !message.startsWith("Lỗi:")) { // Chỉ hiển thị nếu không phải lỗi đã throw
+                if (message != null && !message.isEmpty() && !message.startsWith("Lỗi:")) {
                     AlertUtil.showInfo("Thông báo", message);
+                } else if (message == null || message.isEmpty()) {
+                     AlertUtil.showInfo("Thông báo", "Không có dữ liệu để hiển thị biểu đồ với các lựa chọn hiện tại.");
                 }
-                setChart(null); // Xóa biểu đồ cũ
+                setChart(null);
             }
             loadingIndicator.setVisible(false);
-            generateChartButton.setDisable(false);
+            validateInputsAndToggleButtonState(); // Re-evaluate button state after task completion
         });
 
         chartGenerationTask.setOnFailed(workerStateEvent -> {
             Throwable exception = chartGenerationTask.getException();
-            String taskMessage = chartGenerationTask.getMessage(); // Lấy thông báo từ updateMessage() nếu có
+            String taskMessage = chartGenerationTask.getMessage();
 
             if (taskMessage != null && taskMessage.startsWith("Lỗi:")) {
                 AlertUtil.showError("Lỗi Tạo Biểu Đồ", taskMessage);
-            } else {
-                AlertUtil.showError("Lỗi Tạo Biểu Đồ", "Đã xảy ra lỗi: " + exception.getMessage());
+            } else if (exception instanceof IllegalArgumentException || exception instanceof IllegalStateException) {
+                 AlertUtil.showError("Lỗi Đầu Vào", exception.getMessage()); // More specific for input errors
             }
-            exception.printStackTrace(); // Luôn in stack trace để debug
-            setChart(null); // Xóa biểu đồ
+            else {
+                AlertUtil.showError("Lỗi Tạo Biểu Đồ", "Đã xảy ra lỗi: " + (exception != null ? exception.getMessage() : "Unknown error"));
+            }
+
+            if (exception != null) {
+                exception.printStackTrace();
+            }
+            setChart(null);
             loadingIndicator.setVisible(false);
-            generateChartButton.setDisable(false);
+            validateInputsAndToggleButtonState(); // Re-evaluate button state after task failure
         });
 
-        // Chạy Task trên một Thread Pool mặc định của JavaFX
         new Thread(chartGenerationTask).start();
     }
 

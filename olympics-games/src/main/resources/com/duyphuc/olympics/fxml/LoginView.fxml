@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- LoginView.fxml -->
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
@@ -11,61 +12,60 @@
 <?import io.github.palexdev.materialfx.controls.MFXTextField?>
 <?import io.github.palexdev.materialfx.controls.MFXPasswordField?>
 <?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import javafx.scene.shape.SVGPath?>
 
-<StackPane fx:id="rootPane" prefHeight="580.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane fx:id="rootPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.duyphuc.olympics.controller.LoginController"
            stylesheets="/com/duyphuc/olympics/css/login.css"
            styleClass="root"
-           alignment="CENTER"> <!-- THÊM alignment="CENTER" cho StackPane gốc -->
+           alignment="CENTER">
 
-    <!-- Background with gradient -->
-    <!-- Rectangle và Canvas sẽ tự động co giãn theo StackPane nếu không có kích thước cố định -->
     <Rectangle fx:id="backgroundRect" styleClass="background-rect"
-               width="${rootPane.width}" height="${rootPane.height}"/> <!-- Bind width/height với rootPane -->
+               width="${rootPane.width}" height="${rootPane.height}"/>
 
-    <!-- Canvas for Particle Effects -->
     <Canvas fx:id="particleCanvas" mouseTransparent="true"
-            width="${rootPane.width}" height="${rootPane.height}"/> <!-- Bind width/height với rootPane -->
+            width="${rootPane.width}" height="${rootPane.height}"/>
 
-    <!-- Login Form Container -->
-    <!-- VBox này sẽ được căn giữa bởi StackPane gốc.
-         Chúng ta không muốn nó giãn ra toàn màn hình, chỉ giữ kích thước cố định của nó.
-         Việc StackPane gốc có alignment="CENTER" sẽ giữ VBox này ở giữa.
-    -->
     <VBox fx:id="loginContainer" styleClass="login-container" alignment="CENTER" spacing="25"
-          maxWidth="400" prefWidth="400" 
-          maxHeight="500" >
+          maxWidth="430" prefWidth="430"
+          maxHeight="540" > <!-- Adjusted maxHeight if needed -->
         <padding>
             <Insets top="30" right="40" bottom="30" left="40"/>
         </padding>
 
-        <!-- Olympic Logo Animation Container -->
         <Pane fx:id="olympicLogoContainer" styleClass="logo-container"
-              minHeight="100" prefHeight="120" maxHeight="140"
-              prefWidth="300"> <!-- Thêm alignment="CENTER" cho Pane -->
-            <!-- Olympic Rings will be added programmatically -->
+              minHeight="100" prefHeight="110" maxHeight="120">
         </Pane>
 
-        <!-- Title -->
         <Label text="Olympic Games Analyzer" styleClass="title-label" alignment="CENTER"/>
 
-        <!-- Form Fields -->
-        <VBox spacing="18" alignment="CENTER" styleClass="fields-container" prefWidth="300">
-
+        <VBox spacing="22" alignment="CENTER" styleClass="fields-container" prefWidth="320">
             <MFXTextField fx:id="usernameField" promptText="Tên đăng nhập" styleClass="input-field" floatMode="BORDER"
-                          prefWidth="Infinity"/>
+                          prefWidth="Infinity">
+                <leadingIcon>
+                    <SVGPath content="M12 2C9.243 2 7 4.243 7 7s2.243 5 5 5 5-2.243 5-5S14.757 2 12 2zm0 8c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3zm0 2c-2.667 0-8 1.333-8 4v2h16v-2c0-2.667-5.333-4-8-4z" styleClass="icon" scaleX="0.8" scaleY="0.8"/>
+                </leadingIcon>
+            </MFXTextField>
 
             <MFXPasswordField fx:id="passwordField" promptText="Mật khẩu" styleClass="input-field" floatMode="BORDER"
-                                prefWidth="Infinity"/>
+                                prefWidth="Infinity">
+                 <leadingIcon>
+                    <SVGPath content="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" styleClass="icon" scaleX="0.8" scaleY="0.8"/>
+                </leadingIcon>
+            </MFXPasswordField>
 
-            <Label fx:id="messageLabel" styleClass="message-label" visible="false" managed="true" alignment="CENTER" wrapText="true"/> <!-- Thêm wrapText -->
+            <Label fx:id="messageLabel" styleClass="message-label" visible="false" managed="false" alignment="CENTER" wrapText="true"/>
 
             <HBox alignment="CENTER" prefWidth="Infinity">
-                 <MFXButton fx:id="loginButton" text="ĐĂNG NHẬP" onAction="#handleLogin" styleClass="login-button" depthLevel="LEVEL1"
-                           minWidth="150"/>
+                <padding>
+                    <Insets top="12"/>
+                </padding>
+                 <MFXButton fx:id="loginButton" text="ĐĂNG NHẬP" onAction="#handleLogin" styleClass="login-button" depthLevel="LEVEL2"
+                           minWidth="170"/>
             </HBox>
         </VBox>
 
-        
+        <!-- Optional Footer -->
+        <!-- <Label text="© Olympic Games Analyzer" styleClass="footer-label" alignment="CENTER"/> -->
     </VBox>
 </StackPane>

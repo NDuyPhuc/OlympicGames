@@ -198,4 +198,7 @@ public class OlympicRingsAnimation {
         // Dọn dẹp rings khỏi group để tránh memory leak nếu cần
         ringsGroup.getChildren().clear();
     }
+    public Group getRingsGroup() {
+        return this.ringsGroup;
+    }
 }

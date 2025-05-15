@@ -1,3 +1,4 @@
+CREATE DATABASE olympicgames;
 USE olympicgames;
 
 -- File: database_scripts/00_create_users_table.sql

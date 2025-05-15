@@ -1,10 +1,8 @@
 package com.duyphuc.olympics;
 
-import com.duyphuc.olympics.controller.LoginController; // THÊM IMPORT
-import com.duyphuc.olympics.controller.MainDashboardController; // THÊM IMPORT (nếu cần cleanup cho dashboard)
+import com.duyphuc.olympics.controller.LoginController;
+import com.duyphuc.olympics.controller.MainDashboardController;
 import com.duyphuc.olympics.db.DBConnectionManager;
-// Bỏ FxmlLoaderUtil nếu không dùng trực tiếp trong MainApp
-// import com.duyphuc.olympics.util.FxmlLoaderUtil;
 import com.duyphuc.olympics.service.AuthService;
 
 import javafx.application.Application;
@@ -17,7 +15,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Objects; // THÊM IMPORT
+import java.util.Objects;
 
 public class MainApp extends Application {
 
@@ -29,7 +27,7 @@ public class MainApp extends Application {
         MainApp.primaryStageHolder = primaryStage;
         try {
             Image appIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/duyphuc/olympics/images/Olympic_rings.png")));
-            primaryStage.getIcons().add(appIcon); // Thêm icon cho stage
+            primaryStage.getIcons().add(appIcon);
 
             showLoginScene(primaryStage);
 
@@ -47,16 +45,15 @@ public class MainApp extends Application {
     }
 
     public static void showLoginScene(Stage stage) throws IOException {
-        // Dọn dẹp controller cũ trước khi load scene mới
         cleanupCurrentController();
 
         FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/duyphuc/olympics/fxml/LoginView.fxml"));
         Parent root = loader.load();
-        currentController = loader.getController(); // Lưu controller mới
+        currentController = loader.getController();
 
         Scene scene = stage.getScene();
         if (scene == null) {
-            scene = new Scene(root, 800, 580);
+            scene = new Scene(root, 900, 600); // Điều chỉnh kích thước nếu cần
             stage.setScene(scene);
         } else {
             scene.setRoot(root);
@@ -69,48 +66,39 @@ public class MainApp extends Application {
         }
     }
 
-    // Phương thức mới để hiển thị MainDashboard và truyền AuthService
     public static void showMainDashboardScene(Stage stage, AuthService authService) throws IOException {
-        // Dọn dẹp controller cũ (LoginController)
         cleanupCurrentController();
 
         FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/duyphuc/olympics/fxml/MainDashboardView.fxml"));
         Parent root = loader.load();
-        currentController = loader.getController(); // Lưu MainDashboardController
-
-        // Không cần truyền authService nữa nếu MainDashboardController tự lấy instance
-        // MainDashboardController dashboardController = loader.getController();
-        // dashboardController.setAuthService(authService); // Nếu có phương thức này
+        currentController = loader.getController();
 
         Scene scene = stage.getScene();
         if (scene == null) {
-             scene = new Scene(root); // Dashboard có thể tự quyết định kích thước hoặc maximized
+             scene = new Scene(root);
              stage.setScene(scene);
-             stage.setMaximized(true);
         } else {
-            stage.setMaximized(true);
             scene.setRoot(root);
         }
 
         stage.setTitle("Olympic Games Medal Analyzer - Dashboard");
         stage.setMaximized(true);
+        stage.setResizable(true); // Cho phép thay đổi kích thước dashboard
         stage.centerOnScreen();
          if (!stage.isShowing()) {
-        	   stage.setMaximized(true);        	 
             stage.show();
         }
     }
 
 
     private static void cleanupCurrentController() {
-        if (currentController instanceof LoginController) {
+    	if (currentController instanceof LoginController) {
             ((LoginController) currentController).cleanupAnimationsAndTimer();
+        } else if (currentController instanceof MainDashboardController) {
+            // Đảm bảo dòng này được gọi để dọn dẹp dashboard cũ
+            ((MainDashboardController) currentController).cleanupDashboard(); 
         }
-        // Thêm else if cho các controller khác nếu chúng cũng cần cleanup
-        // else if (currentController instanceof MainDashboardController) {
-        //     ((MainDashboardController) currentController).cleanupSomething();
-        // }
-        currentController = null; // Xóa tham chiếu
+        currentController = null;
     }
 
     public static Stage getPrimaryStage() {
@@ -123,10 +111,10 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        cleanupCurrentController(); // Dọn dẹp controller cuối cùng trước khi thoát
+        cleanupCurrentController();
         DBConnectionManager.closeInstanceConnection();
         super.stop();
-        Platform.exit(); // Đảm bảo ứng dụng thoát hoàn toàn
-        System.exit(0); // Thêm dòng này để chắc chắn thoát
+        Platform.exit();
+        System.exit(0);
     }
 }
