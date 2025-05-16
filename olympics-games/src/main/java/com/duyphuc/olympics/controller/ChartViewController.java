@@ -6,11 +6,11 @@ import com.duyphuc.olympics.service.ChartService;
 import com.duyphuc.olympics.service.MedalService;
 import com.duyphuc.olympics.util.AlertUtil;
 
-import javafx.application.Platform; // For Platform.runLater
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingNode;
+import javafx.embed.swing.SwingNode; // Đảm bảo import này là chính xác
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -31,7 +31,6 @@ import java.util.Map;
 
 public class ChartViewController {
 
-    // ... (all your @FXML declarations remain the same) ...
     @FXML private ComboBox<String> chartTypeComboBox;
     @FXML private ComboBox<OlympicEvent> olympicEventComboBox;
     @FXML private ComboBox<String> countryComboBox;
@@ -52,8 +51,7 @@ public class ChartViewController {
 
     @FXML private Button generateChartButton;
     @FXML private SwingNode swingNodeChart;
-    @FXML private StackPane chartContainerPane;
-
+    @FXML private StackPane chartContainerPane; // Container của SwingNode
 
     private MedalService medalService;
     private ChartService chartService;
@@ -84,61 +82,56 @@ public class ChartViewController {
         ));
         chartTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             updateVisibleControls(newVal);
-            validateInputsAndToggleButtonState(); // <<< ADDED
+            validateInputsAndToggleButtonState();
         });
-        // chartTypeComboBox.getSelectionModel().selectFirst(); // This will be done after updateVisibleControls for initial setup
 
         sortByComboBox.setItems(FXCollections.observableArrayList("Total", "Gold", "Silver", "Bronze"));
         sortByComboBox.getSelectionModel().selectFirst();
-        sortByComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
+        sortByComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState());
 
         medalTypeComboBox.setItems(FXCollections.observableArrayList("Total", "Gold", "Silver", "Bronze"));
         medalTypeComboBox.getSelectionModel().selectFirst();
-        medalTypeComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
+        medalTypeComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState());
 
 
         SpinnerValueFactory.IntegerSpinnerValueFactory valueFactory =
             new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 50, 10);
         topNSpinner.setValueFactory(valueFactory);
-        topNSpinner.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
+        topNSpinner.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState());
 
 
         try {
             olympicEventsList = FXCollections.observableArrayList(medalService.getEvents());
             olympicEventComboBox.setItems(olympicEventsList);
             if (!olympicEventsList.isEmpty()) {
-                olympicEventComboBox.getSelectionModel().selectFirst(); // This will trigger its listener
+                olympicEventComboBox.getSelectionModel().selectFirst();
             } else {
-                validateInputsAndToggleButtonState(); // If no events, validate button state
+                validateInputsAndToggleButtonState();
             }
         } catch (SQLException e) {
             AlertUtil.showError("Database Error", "Failed to load Olympic events: " + e.getMessage());
-            validateInputsAndToggleButtonState(); // Validate button state on error
+            validateInputsAndToggleButtonState();
         }
 
         olympicEventComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldEvent, newEvent) -> {
             if (newEvent != null) {
-                loadNOCsForSelectedEvent(); // This will eventually call validateInputsAndToggleButtonState
+                loadNOCsForSelectedEvent();
             } else {
                 countryComboBox.getItems().clear();
                 countryComboBox.setValue(null);
-                validateInputsAndToggleButtonState(); // <<< ADDED
+                validateInputsAndToggleButtonState();
             }
         });
-        countryComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState()); // <<< ADDED
+        countryComboBox.valueProperty().addListener((obs, ov, nv) -> validateInputsAndToggleButtonState());
 
-        chartTypeComboBox.getSelectionModel().selectFirst(); // Select first chart type AFTER all listeners are set up
-        // updateVisibleControls is called by chartTypeComboBox listener
-        // validateInputsAndToggleButtonState is also called by chartTypeComboBox listener
+        chartTypeComboBox.getSelectionModel().selectFirst();
     }
 
     private void loadNOCsForSelectedEvent() {
         OlympicEvent selectedEvent = olympicEventComboBox.getValue();
         if (selectedEvent != null) {
-            // Temporarily disable button while NOCs are loading for the selected event,
-            // especially if the current chart requires NOC
             generateChartButton.setDisable(true);
-            loadingIndicator.setVisible(true); // Show generic loading for NOCs too
+            loadingIndicator.setVisible(true);
 
             Task<List<String>> loadNocsTask = new Task<>() {
                 @Override
@@ -156,9 +149,9 @@ public class ChartViewController {
                         countryComboBox.getItems().clear();
                         countryComboBox.setValue(null);
                     }
-                    Platform.runLater(() -> { // Ensure UI updates are on JavaFX thread
+                    Platform.runLater(() -> {
                         loadingIndicator.setVisible(false);
-                        validateInputsAndToggleButtonState(); // <<< Crucial: validate after NOCs are loaded/selected
+                        validateInputsAndToggleButtonState();
                     });
                 }
 
@@ -169,7 +162,7 @@ public class ChartViewController {
                         countryComboBox.getItems().clear();
                         countryComboBox.setValue(null);
                         loadingIndicator.setVisible(false);
-                        validateInputsAndToggleButtonState(); // <<< Crucial: validate even on failure
+                        validateInputsAndToggleButtonState();
                     });
                 }
             };
@@ -184,7 +177,6 @@ public class ChartViewController {
     private void updateVisibleControls(String chartType) {
         if (chartType == null) return;
 
-        // Default visibility
         dataScopeLabel.setVisible(true); dataScopeLabel.setManaged(true);
         olympicEventControlsContainer.setVisible(true); olympicEventControlsContainer.setManaged(true);
         parametersLabel.setVisible(true); parametersLabel.setManaged(true);
@@ -210,7 +202,6 @@ public class ChartViewController {
                 break;
         }
 
-        // Adjust container visibility based on children
         if (!olympicEventControls.isManaged() && !countryControls.isManaged()) {
             dataScopeLabel.setVisible(false); dataScopeLabel.setManaged(false);
             olympicEventControlsContainer.setVisible(false); olympicEventControlsContainer.setManaged(false);
@@ -219,8 +210,6 @@ public class ChartViewController {
             parametersLabel.setVisible(false); parametersLabel.setManaged(false);
             parametersControlsContainer.setVisible(false); parametersControlsContainer.setManaged(false);
         }
-        // No need to call validateInputsAndToggleButtonState() here,
-        // as it's called by the chartTypeComboBox listener which triggers this method.
     }
 
     private void validateInputsAndToggleButtonState() {
@@ -247,50 +236,68 @@ public class ChartViewController {
                     }
                     break;
                 default:
-                    disableButton = true; // Unknown chart type
+                    disableButton = true;
                     break;
             }
         }
-
-        // Also disable if a chart generation task is already running
         if (loadingIndicator.isVisible()) {
-             // If loadingIndicator is for chart generation (not NOC load), keep button disabled.
-             // This check is tricky. For now, if loadingIndicator is visible, assume something is loading.
             disableButton = true;
         }
         generateChartButton.setDisable(disableButton);
     }
 
+    /**
+     * Cập nhật SwingNode với ChartPanel được cung cấp và yêu cầu JavaFX re-layout.
+     * @param chartPanel ChartPanel để hiển thị, hoặc null để xóa biểu đồ.
+     */
+    private void updateChartDisplay(final ChartPanel chartPanel) {
+        SwingUtilities.invokeLater(() -> {
+            if (swingNodeChart != null) {
+                swingNodeChart.setContent(chartPanel);
+
+                Platform.runLater(() -> {
+                    if (chartContainerPane != null) {
+                        // THỬ THAY ĐỔI MỘT THUỘC TÍNH NHỎ
+                        double originalOpacity = chartContainerPane.getOpacity();
+                        chartContainerPane.setOpacity(0.99); // Thay đổi nhỏ
+                        // Yêu cầu layout
+                        chartContainerPane.requestLayout();
+
+                        // Khôi phục lại sau một chút
+                        Platform.runLater(() -> {
+                           chartContainerPane.setOpacity(originalOpacity);
+                        });
+                    }
+                });
+            }
+        });
+    }
 
     @FXML
     private void handleGenerateChart() {
-        // Validation is now primarily handled by validateInputsAndToggleButtonState()
-        // which should prevent this method from being called with invalid inputs.
-        // However, defensive checks here are still good practice.
-
         String selectedChartType = chartTypeComboBox.getValue();
-        // Get values based on visibility/management (as before)
         OlympicEvent selectedEvent = olympicEventControls.isManaged() ? olympicEventComboBox.getValue() : null;
         String selectedNOC = countryControls.isManaged() ? countryComboBox.getValue() : null;
         Integer nValue = topNControls.isManaged() ? topNSpinner.getValue() : null;
         String sortBy = topNControls.isManaged() ? sortByComboBox.getValue() : null;
         String medalType = medalTypeControls.isManaged() ? medalTypeComboBox.getValue() : null;
 
-        // Redundant check, but safe
         if (generateChartButton.isDisabled()) {
             AlertUtil.showWarning("Input Error", "Please ensure all required fields are selected for the chosen chart type.");
             return;
         }
 
         loadingIndicator.setVisible(true);
-        generateChartButton.setDisable(true); // Explicitly disable during task
-        swingNodeChart.setContent(null);
+        generateChartButton.setDisable(true);
+        
+        updateChartDisplay(null); // Xóa biểu đồ cũ
+
 
         Task<ChartPanel> chartGenerationTask = new Task<>() {
             @Override
             protected ChartPanel call() throws Exception {
                 ChartPanel panel = null;
-                // Re-check inputs inside the task as a final safeguard or for specific error messages
+                // ... (logic tạo biểu đồ giữ nguyên từ trước)
                 switch (selectedChartType) {
                     case "Top N Countries (Bar Chart)":
                         if (selectedEvent == null) throw new IllegalArgumentException("Olympic event not selected.");
@@ -334,19 +341,18 @@ public class ChartViewController {
 
         chartGenerationTask.setOnSucceeded(workerStateEvent -> {
             ChartPanel resultPanel = chartGenerationTask.getValue();
-            if (resultPanel != null) {
-                setChart(resultPanel);
-            } else {
+            updateChartDisplay(resultPanel); 
+            
+            if (resultPanel == null) {
                 String message = chartGenerationTask.getMessage();
                 if (message != null && !message.isEmpty() && !message.startsWith("Lỗi:")) {
                     AlertUtil.showInfo("Thông báo", message);
                 } else if (message == null || message.isEmpty()) {
                      AlertUtil.showInfo("Thông báo", "Không có dữ liệu để hiển thị biểu đồ với các lựa chọn hiện tại.");
                 }
-                setChart(null);
             }
             loadingIndicator.setVisible(false);
-            validateInputsAndToggleButtonState(); // Re-evaluate button state after task completion
+            validateInputsAndToggleButtonState();
         });
 
         chartGenerationTask.setOnFailed(workerStateEvent -> {
@@ -356,7 +362,7 @@ public class ChartViewController {
             if (taskMessage != null && taskMessage.startsWith("Lỗi:")) {
                 AlertUtil.showError("Lỗi Tạo Biểu Đồ", taskMessage);
             } else if (exception instanceof IllegalArgumentException || exception instanceof IllegalStateException) {
-                 AlertUtil.showError("Lỗi Đầu Vào", exception.getMessage()); // More specific for input errors
+                 AlertUtil.showError("Lỗi Đầu Vào", exception.getMessage());
             }
             else {
                 AlertUtil.showError("Lỗi Tạo Biểu Đồ", "Đã xảy ra lỗi: " + (exception != null ? exception.getMessage() : "Unknown error"));
@@ -365,17 +371,11 @@ public class ChartViewController {
             if (exception != null) {
                 exception.printStackTrace();
             }
-            setChart(null);
+            updateChartDisplay(null); 
             loadingIndicator.setVisible(false);
-            validateInputsAndToggleButtonState(); // Re-evaluate button state after task failure
+            validateInputsAndToggleButtonState();
         });
 
         new Thread(chartGenerationTask).start();
-    }
-
-    private void setChart(final ChartPanel chartPanel) {
-        SwingUtilities.invokeLater(() -> {
-            swingNodeChart.setContent(chartPanel);
-        });
     }
 }

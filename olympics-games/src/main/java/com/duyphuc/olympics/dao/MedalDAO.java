@@ -2,145 +2,173 @@ package com.duyphuc.olympics.dao;
 
 import com.duyphuc.olympics.db.DBConnectionManager;
 import com.duyphuc.olympics.model.MedalEntry;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.Statement; // Added for CREATE/DROP
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MedalDAO {
 
-    /**
-     * Lấy tất cả các bản ghi huy chương từ một bảng sự kiện Olympic cụ thể.
-     * Các bản ghi được sắp xếp theo Vàng, Bạc, Đồng (giảm dần), rồi đến NOC (tăng dần).
-     * @param tableName Tên bảng CSDL của kỳ Olympic (ví dụ: "medals_athens2004olympicsnationsmedalscsv")
-     * @return Danh sách các đối tượng MedalEntry.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình truy vấn CSDL.
-     */
-    public List<MedalEntry> getMedalsByEventTable(String tableName) throws SQLException {
-        List<MedalEntry> entries = new ArrayList<>();
-        // Sử dụng backtick (`) cho tên bảng để đảm bảo an toàn nếu tên có ký tự đặc biệt
-        // (mặc dù không có trong trường hợp này nhưng là thực hành tốt)
-        // Giả định các bảng huy chương CÓ cột 'id'. Nếu không, cần loại bỏ 'id' khỏi SELECT.
-        String sql = String.format("SELECT id, NOC, Gold, Silver, Bronze, Total FROM `%s` ORDER BY Gold DESC, Silver DESC, Bronze DESC, NOC ASC", tableName);
+    // --- Existing methods (getMedalsByEventTable, addMedalEntry, etc.) ---
+    // Ensure methods like addMedalEntry, updateMedalEntry, deleteMedalEntry
+    // can accept a Connection parameter if they are to be part of a larger transaction,
+    // or they can continue to manage their own connections if they are standalone operations.
+    // For simplicity here, I'll assume they manage their own connections for CRUD on medal entries,
+    // but create/drop table will be part of a service-managed transaction.
 
+    public List<MedalEntry> getMedalsByEventTable(String tableName) throws SQLException {
+        List<MedalEntry> medals = new ArrayList<>();
+        // Sanitize table name slightly, though it should be system-generated
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            System.err.println("Invalid table name format: " + tableName);
+            return Collections.emptyList();
+        }
+        String sql = "SELECT id, noc, gold, silver, bronze, total FROM " + tableName + " ORDER BY total DESC, gold DESC, noc ASC";
         try (Connection conn = DBConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
-
             while (rs.next()) {
-                MedalEntry entry = new MedalEntry();
-                entry.setId(rs.getInt("id")); // Giả định cột 'id' tồn tại
-                entry.setNoc(rs.getString("NOC"));
-                entry.setGold(rs.getInt("Gold"));
-                entry.setSilver(rs.getInt("Silver"));
-                entry.setBronze(rs.getInt("Bronze"));
-                entry.setTotal(rs.getInt("Total"));
-                entries.add(entry);
+                medals.add(new MedalEntry(
+                        rs.getInt("id"),
+                        rs.getString("noc"),
+                        rs.getInt("gold"),
+                        rs.getInt("silver"),
+                        rs.getInt("bronze")
+                        // total is set by constructor or setters
+                ));
             }
-        } catch (SQLException e) {
-            // Ném lại SQLException để lớp gọi (Service) có thể xử lý
-            throw new SQLException("Error fetching medals from table " + tableName + ": " + e.getMessage(), e);
         }
-        return entries;
+        // SQLException will be thrown upwards
+        return medals;
     }
 
-    /**
-     * Thêm một bản ghi huy chương mới vào bảng sự kiện Olympic cụ thể.
-     * @param entry Đối tượng MedalEntry chứa thông tin cần thêm.
-     * @param tableName Tên bảng CSDL của kỳ Olympic.
-     * @return true nếu thêm thành công và ID được tạo, false nếu không.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình thêm vào CSDL.
-     */
     public boolean addMedalEntry(MedalEntry entry, String tableName) throws SQLException {
-        String sql = String.format("INSERT INTO `%s` (NOC, Gold, Silver, Bronze, Total) VALUES (?, ?, ?, ?, ?)", tableName);
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+             System.err.println("Invalid table name for add: " + tableName);
+             return false;
+        }
+        // Ensure total is calculated
+        entry.setTotal(entry.getGold() + entry.getSilver() + entry.getBronze());
+
+        String sql = "INSERT INTO " + tableName + " (noc, gold, silver, bronze, total) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
             pstmt.setString(1, entry.getNoc());
             pstmt.setInt(2, entry.getGold());
             pstmt.setInt(3, entry.getSilver());
             pstmt.setInt(4, entry.getBronze());
-            pstmt.setInt(5, entry.getTotal()); // Đảm bảo total đã được tính trong Service
-
+            pstmt.setInt(5, entry.getTotal());
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        entry.setId(generatedKeys.getInt(1)); // Lấy ID tự tăng và gán lại cho entry
+                        entry.setId(generatedKeys.getInt(1));
                         return true;
                     }
                 }
             }
-            return false; // Không có ID được tạo hoặc không có dòng nào bị ảnh hưởng
-        } catch (SQLException e) {
-            throw new SQLException("Error adding medal entry to " + tableName + ": " + e.getMessage(), e);
+            return false;
         }
     }
 
-    /**
-     * Cập nhật thông tin một bản ghi huy chương trong bảng sự kiện Olympic cụ thể.
-     * @param entry Đối tượng MedalEntry chứa thông tin cập nhật (bao gồm cả ID của bản ghi cần sửa).
-     * @param tableName Tên bảng CSDL của kỳ Olympic.
-     * @return true nếu cập nhật thành công, false nếu không có bản ghi nào được cập nhật (ví dụ: ID không tồn tại).
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình cập nhật CSDL.
-     */
     public boolean updateMedalEntry(MedalEntry entry, String tableName) throws SQLException {
-        String sql = String.format("UPDATE `%s` SET NOC = ?, Gold = ?, Silver = ?, Bronze = ?, Total = ? WHERE id = ?", tableName);
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            System.err.println("Invalid table name for update: " + tableName);
+            return false;
+        }
+        // Ensure total is calculated
+        entry.setTotal(entry.getGold() + entry.getSilver() + entry.getBronze());
+        String sql = "UPDATE " + tableName + " SET noc = ?, gold = ?, silver = ?, bronze = ?, total = ? WHERE id = ?";
         try (Connection conn = DBConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setString(1, entry.getNoc());
             pstmt.setInt(2, entry.getGold());
             pstmt.setInt(3, entry.getSilver());
             pstmt.setInt(4, entry.getBronze());
             pstmt.setInt(5, entry.getTotal());
             pstmt.setInt(6, entry.getId());
-
             return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new SQLException("Error updating medal entry in " + tableName + ": " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Xóa một bản ghi huy chương khỏi bảng sự kiện Olympic cụ thể dựa trên ID.
-     * @param entryId ID của bản ghi huy chương cần xóa.
-     * @param tableName Tên bảng CSDL của kỳ Olympic.
-     * @return true nếu xóa thành công, false nếu không có bản ghi nào được xóa (ví dụ: ID không tồn tại).
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình xóa khỏi CSDL.
-     */
     public boolean deleteMedalEntry(int entryId, String tableName) throws SQLException {
-        String sql = String.format("DELETE FROM `%s` WHERE id = ?", tableName);
+         if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            System.err.println("Invalid table name for delete: " + tableName);
+            return false;
+        }
+        String sql = "DELETE FROM " + tableName + " WHERE id = ?";
         try (Connection conn = DBConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, entryId);
             return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new SQLException("Error deleting medal entry from " + tableName + ": " + e.getMessage(), e);
         }
     }
-
-    /**
-     * Lấy danh sách các mã quốc gia (NOC) duy nhất từ một bảng sự kiện Olympic.
-     * @param tableName Tên bảng CSDL của kỳ Olympic.
-     * @return Danh sách các chuỗi NOC, được sắp xếp theo thứ tự bảng chữ cái.
-     * @throws SQLException Nếu có lỗi xảy ra trong quá trình truy vấn CSDL.
-     */
+    
     public List<String> getNOCsByEventTable(String tableName) throws SQLException {
-        List<String> nocList = new ArrayList<>();
-        String sql = String.format("SELECT DISTINCT NOC FROM `%s` ORDER BY NOC ASC", tableName);
+        List<String> nocs = new ArrayList<>();
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            System.err.println("Invalid table name for getting NOCs: " + tableName);
+            return nocs;
+        }
+        String sql = "SELECT DISTINCT noc FROM " + tableName + " ORDER BY noc";
         try (Connection conn = DBConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                nocList.add(rs.getString("NOC"));
+                nocs.add(rs.getString("noc"));
             }
-        } catch (SQLException e) {
-            throw new SQLException("Error fetching NOCs from table " + tableName + ": " + e.getMessage(), e);
         }
-        return nocList;
+        return nocs;
+    }
+
+    // --- New methods for table creation/deletion ---
+
+    /**
+     * Creates a new medal table for an Olympic event.
+     * @param tableName The name of the table to create.
+     * @param conn The database connection (transaction managed by service).
+     * @throws SQLException if a database access error occurs.
+     */
+    public void createMedalTable(String tableName, Connection conn) throws SQLException {
+        // Basic sanitization for table name (should be system-generated)
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            throw new SQLException("Invalid table name format for creation: " + tableName);
+        }
+        String sql = "CREATE TABLE " + tableName + " ("
+                   + "id INT AUTO_INCREMENT PRIMARY KEY,"
+                   + "noc VARCHAR(3) NOT NULL,"
+                   + "gold INT DEFAULT 0,"
+                   + "silver INT DEFAULT 0,"
+                   + "bronze INT DEFAULT 0,"
+                   + "total INT DEFAULT 0,"
+                   + "UNIQUE (noc)"
+                   + ")";
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql);
+            System.out.println("Table " + tableName + " created successfully.");
+        }
+    }
+
+    /**
+     * Drops an existing medal table.
+     * @param tableName The name of the table to drop.
+     * @param conn The database connection (transaction managed by service).
+     * @throws SQLException if a database access error occurs.
+     */
+    public void dropMedalTable(String tableName, Connection conn) throws SQLException {
+        // Basic sanitization
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            throw new SQLException("Invalid table name format for drop: " + tableName);
+        }
+        String sql = "DROP TABLE IF EXISTS " + tableName; // Use IF EXISTS for safety
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql);
+            System.out.println("Table " + tableName + " dropped successfully.");
+        }
     }
 }

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="500.0" prefWidth="700.0" styleClass="root-pane" stylesheets="@../css/AdminUserManagementStyles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duyphuc.olympics.controller.AdminOlympicEventManagementController">
+    <top>
+        <Label text="Olympic Event Management" styleClass="header-label" BorderPane.alignment="CENTER">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+            <BorderPane.margin>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </BorderPane.margin>
+        </Label>
+    </top>
+    <center>
+        <VBox spacing="10" styleClass="content-area">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <children>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Filter Events:" styleClass="form-label"/>
+                    <TextField fx:id="filterField" promptText="Filter by name or year" HBox.hgrow="ALWAYS" styleClass="text-field"/>
+                </HBox>
+                <ListView fx:id="olympicEventsListView" VBox.vgrow="ALWAYS" styleClass="list-view-custom"/>
+                <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                     <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                    <Button fx:id="refreshButton" text="Refresh List" onAction="#handleRefreshList" styleClass="button-primary"/>
+                    <Button fx:id="addNewEventButton" text="Add New Event" onAction="#handleAddNewEvent" styleClass="button-add"/>
+                    <Button fx:id="deleteEventButton" text="Delete Selected Event" onAction="#handleDeleteEvent" styleClass="button-delete" disable="true"/>
+                </HBox>
+            </children>
+        </VBox>
+    </center>
+    <bottom>
+        <!-- Dialog for adding/editing an event. Could be a separate FXML or built in code. -->
+        <GridPane fx:id="eventFormPane" hgap="10" vgap="10" styleClass="form-container" visible="false" managed="false">
+            <padding>
+                <Insets bottom="15.0" left="25.0" right="25.0" top="15.0" />
+            </padding>
+            <Label text="Event Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
+            <TextField fx:id="eventNameField" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="text-field"/>
+            <Label text="Year:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="form-label"/>
+            <TextField fx:id="eventYearField" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="text-field"/>
+            <Label text="Type (Summer/Winter):" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label"/>
+            <ComboBox fx:id="eventTypeComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="combo-box-custom" promptText="Select Type"/>
+            <HBox spacing="10" GridPane.rowIndex="3" GridPane.columnIndex="1" alignment="CENTER_RIGHT">
+                <Button fx:id="saveEventButton" text="Save Event" onAction="#handleSaveEvent" styleClass="button-confirm"/>
+                <Button fx:id="cancelEventButton" text="Cancel" onAction="#handleCancelEventForm" styleClass="button-cancel"/>
+            </HBox>
+        </GridPane>
+    </bottom>
+</BorderPane>

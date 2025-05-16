@@ -29,16 +29,16 @@
             </padding>
             <children>
                 <!-- HBox này chứa logo và tiêu đề phụ bên trong sidebar -->
-                <HBox fx:id="appTitleHBoxInSidebar" alignment="CENTER_LEFT" spacing="10" prefHeight="50"> <!-- Giảm chiều cao 1 chút -->
+                <HBox fx:id="appTitleHBoxInSidebar" alignment="CENTER_LEFT" spacing="10" prefHeight="50">
                     <padding>
-                        <Insets left="15" right="10" /> <!-- Điều chỉnh padding -->
+                        <Insets left="15" right="10" />
                     </padding>
                     <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
                         <image>
                             <Image url="@../images/Olympic_rings.png" />
                         </image>
                     </ImageView>
-                    <Label text="Analyzer" styleClass="app-title-sidebar" /> <!-- Text có thể ngắn hơn -->
+                    <Label text="Analyzer" styleClass="app-title-sidebar" />
                 </HBox>
 
                 <Button fx:id="dashboardHomeButton" text="Trang chủ Dashboard" onAction="#handleShowDashboardHome" styleClass="nav-button" prefWidth="Infinity">
@@ -62,10 +62,17 @@
                     </graphic>
                 </Button>
 
-                <VBox fx:id="adminSection" VBox.vgrow="NEVER">
+                <VBox fx:id="adminSection" VBox.vgrow="NEVER" spacing="0"> <!-- spacing="0" if buttons are directly one after another -->
                      <Button fx:id="manageUsersButton" text="Quản lý Người dùng" onAction="#handleManageUsers" styleClass="nav-button-admin" prefWidth="Infinity">
                         <graphic>
                             <ImageView fitHeight="20.0" fitWidth="20.0"><image><Image url="@../images/users_icon.png" /></image></ImageView>
+                        </graphic>
+                    </Button>
+                    <!-- NEW BUTTON HERE -->
+                    <Button fx:id="manageOlympicEventsButton" text="Quản lý Sự kiện Olympic" onAction="#handleManageOlympicEvents" styleClass="nav-button-admin" prefWidth="Infinity">
+                        <graphic>
+                            <!-- You might want a new icon for this -->
+                            <ImageView fitHeight="20.0" fitWidth="20.0"><image><Image url="@../images/event_icon.png" /></image></ImageView>
                         </graphic>
                     </Button>
                 </VBox>

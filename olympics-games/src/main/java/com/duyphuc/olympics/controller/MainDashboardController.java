@@ -43,7 +43,7 @@ public class MainDashboardController {
     @FXML private BorderPane contentArea;
     @FXML private ScrollPane contentScrollPane;
     @FXML private VBox sidebar;
-    @FXML private HBox appTitleHBoxInSidebar; // HBox chứa logo và tên app trong sidebar
+    @FXML private HBox appTitleHBoxInSidebar;
     @FXML private VBox adminSection;
     @FXML private Button toggleSidebarButton;
     @FXML private Button dashboardHomeButton;
@@ -51,6 +51,7 @@ public class MainDashboardController {
     @FXML private Button viewChartsButton;
     @FXML private Button viewReportsButton;
     @FXML private Button manageUsersButton;
+    @FXML private Button manageOlympicEventsButton; // <<< NEW FXML FIELD
     @FXML private Button profileButton;
     @FXML private Button logoutButton;
     @FXML private Pane olympicAnimationPlaceholder;
@@ -62,14 +63,17 @@ public class MainDashboardController {
 
     private boolean sidebarCollapsed = false;
     private final double SIDEBAR_EXPANDED_WIDTH = 250.0;
-    private final double SIDEBAR_COLLAPSED_WIDTH = 65.0; // Giảm một chút để icon vừa vặn
+    private final double SIDEBAR_COLLAPSED_WIDTH = 65.0;
     private final String ORIGINAL_TEXT_KEY = "originalText";
+
+    // To hold reference to MedalManagementController for refreshing its ComboBox
+    private MedalManagementController medalManagementControllerInstance;
 
     @FXML
     public void initialize() {
         authService = AuthService.getInstance();
         createInitialDashboardHomeView();
-        loadViewIntoContentArea(initialDashboardHomeView, false);
+        loadViewIntoContentArea(initialDashboardHomeView, false); // Load home view initially
 
         if (olympicAnimationPlaceholder != null) {
             try {
@@ -84,7 +88,7 @@ public class MainDashboardController {
         
         updateWelcomeMessage();
         configureAdminControls();
-        updateSidebarState(); // Gọi để thiết lập trạng thái ban đầu của sidebar
+        updateSidebarState(); 
 
         if (dashboardHomeButton != null) {
             dashboardHomeButton.requestFocus();
@@ -98,27 +102,22 @@ public class MainDashboardController {
     }
 
     private void updateSidebarState() {
-        if (toggleSidebarButton == null || sidebar == null) return; // Guard clause
+        if (toggleSidebarButton == null || sidebar == null) return;
 
-        toggleSidebarButton.setText(sidebarCollapsed ? "☰" : "❮"); // Ký tự menu và mũi tên trái
+        toggleSidebarButton.setText(sidebarCollapsed ? "☰" : "❮");
         sidebar.setPrefWidth(sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH);
         setSidebarButtonsDisplay(sidebarCollapsed);
     }
 
     private void setSidebarButtonsDisplay(boolean collapsed) {
-        // Xử lý HBox tiêu đề trong sidebar
         if (appTitleHBoxInSidebar != null) {
             appTitleHBoxInSidebar.setVisible(!collapsed);
             appTitleHBoxInSidebar.setManaged(!collapsed);
         }
-
-        // Xử lý các button chính trong sidebar
         processButtonsInContainer(sidebar, collapsed);
-
-        // Xử lý button trong adminSection (nếu adminSection là VBox con của sidebar)
-        if (adminSection != null) {
-            processButtonsInContainer(adminSection, collapsed);
-        }
+        // adminSection is part of sidebar, so processButtonsInContainer(sidebar, collapsed) will handle its children.
+        // No need to call processButtonsInContainer(adminSection, collapsed) separately if adminSection itself is a direct child of 'sidebar'.
+        // If adminSection's buttons needed special handling different from other sidebar buttons, then a separate call would be justified.
     }
 
     private void processButtonsInContainer(Pane container, boolean collapsed) {
@@ -126,52 +125,44 @@ public class MainDashboardController {
         for (Node node : container.getChildren()) {
             if (node instanceof Button) {
                 Button button = (Button) node;
-                // Bỏ qua toggleSidebarButton nếu nó vô tình nằm trong container này (không nên)
                 if (button == toggleSidebarButton) continue; 
 
                 String originalText = getOriginalButtonText(button);
 
                 if (collapsed) {
-                    // Chỉ lưu text gốc nếu nó chưa được lưu và button đang có text
                     if (button.getText() != null && !button.getText().isEmpty() && button.getProperties().get(ORIGINAL_TEXT_KEY) == null) {
                         button.getProperties().put(ORIGINAL_TEXT_KEY, button.getText());
                     }
                     button.setText(null);
                     button.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                     button.setAlignment(Pos.CENTER);
-                    // Đặt prefWidth để icon được căn giữa trong không gian hẹp
-                    // Trừ đi padding của VBox sidebar (nếu có) hoặc đặt một giá trị cố định nhỏ
-                    button.setPrefWidth(SIDEBAR_COLLAPSED_WIDTH - 10); // Ví dụ: 65 - 10 = 55
+                    button.setPrefWidth(SIDEBAR_COLLAPSED_WIDTH - 10); 
                     button.getStyleClass().add("nav-button-collapsed");
                     button.getStyleClass().remove("nav-button-expanded");
-
-
                 } else {
                     String textToShow = (String) button.getProperties().getOrDefault(ORIGINAL_TEXT_KEY, originalText);
                      if (textToShow == null || textToShow.isEmpty()) {
-                        textToShow = (button.getGraphic() != null) ? "" : "N/A";
+                        textToShow = (button.getGraphic() != null) ? "" : "N/A"; // Provide a fallback if text is somehow lost
                     }
                     button.setText(textToShow);
                     button.setContentDisplay(ContentDisplay.LEFT);
                     button.setAlignment(Pos.CENTER_LEFT);
-                    button.setPrefWidth(VBox.USE_COMPUTED_SIZE); // Hoặc giá trị prefWidth ban đầu
+                    button.setPrefWidth(VBox.USE_COMPUTED_SIZE); 
                     button.getStyleClass().remove("nav-button-collapsed");
                     button.getStyleClass().add("nav-button-expanded");
                 }
-            } else if (node instanceof VBox) { // Đệ quy cho VBox con (như adminSection)
-                // Không cần đệ quy ở đây nữa vì adminSection được xử lý riêng bên ngoài
+            } else if (node instanceof VBox) { // Recursively process VBox children
+                processButtonsInContainer((VBox) node, collapsed);
             }
         }
     }
     
     private String getOriginalButtonText(Button button) {
-        // Ưu tiên lấy từ properties nếu đã lưu
         if (button.getProperties().containsKey(ORIGINAL_TEXT_KEY)) {
             return (String) button.getProperties().get(ORIGINAL_TEXT_KEY);
         }
-        // Nếu không, dựa trên fx:id
         String buttonId = button.getId();
-        if (buttonId == null) return "";
+        if (buttonId == null) return (button.getText() != null) ? button.getText() : ""; // Fallback to current text
 
         switch (buttonId) {
             case "dashboardHomeButton": return "Trang chủ Dashboard";
@@ -179,17 +170,13 @@ public class MainDashboardController {
             case "viewChartsButton": return "Xem Biểu đồ";
             case "viewReportsButton": return "Xem Báo cáo";
             case "manageUsersButton": return "Quản lý Người dùng";
+            case "manageOlympicEventsButton": return "Quản lý Sự kiện Olympic"; // <<< ADDED
             case "profileButton": return "Thông tin cá nhân";
             case "logoutButton": return "Đăng xuất";
-            default: return (button.getText() != null) ? button.getText() : ""; // Lấy text hiện tại nếu không có id
+            default: return (button.getText() != null) ? button.getText() : "";
         }
     }
     
-    // ... (Các phương thức createInitialDashboardHomeView, createAccessCard, updateWelcomeMessage, 
-    //      configureAdminControls, loadViewIntoContentArea, các handleAction khác giữ nguyên) ...
-    // Đảm bảo các phương thức này không bị thay đổi nếu không cần thiết.
-    
-    // Các phương thức còn lại (giữ nguyên từ code bạn cung cấp nếu chúng không liên quan trực tiếp đến sidebar)
     private void createInitialDashboardHomeView() {
         VBox homeContent = new VBox(30);
         homeContent.setAlignment(Pos.TOP_CENTER);
@@ -262,20 +249,40 @@ public class MainDashboardController {
     private void configureAdminControls() {
         User currentUser = authService.getCurrentUser();
         boolean isAdmin = currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole());
-        if (adminSection != null) { adminSection.setVisible(isAdmin); adminSection.setManaged(isAdmin); }
-        if (manageUsersButton != null) { manageUsersButton.setVisible(isAdmin); manageUsersButton.setManaged(isAdmin); }
+        
+        if (adminSection != null) { 
+            adminSection.setVisible(isAdmin); 
+            adminSection.setManaged(isAdmin); 
+        }
+        // Individual buttons within adminSection also need to be managed if adminSection itself is not the sole controller of their visibility.
+        // However, since adminSection's visibility is set, its children will also be hidden/shown.
+        // If you had admin buttons outside adminSection, you'd manage them like this:
+        // if (manageUsersButton != null) { manageUsersButton.setVisible(isAdmin); manageUsersButton.setManaged(isAdmin); }
+        // if (manageOlympicEventsButton != null) { manageOlympicEventsButton.setVisible(isAdmin); manageOlympicEventsButton.setManaged(isAdmin); }
     }
 
-    private void loadViewIntoContentArea(String fxmlPath) {
+    private void loadViewIntoContentArea(String fxmlPath, boolean passMedalControllerRef) {
         try {
-            Node view = FxmlLoaderUtil.loadFXML(Objects.requireNonNull(fxmlPath, "FXML path cannot be null"));
+            FXMLLoader loader = FxmlLoaderUtil.getLoader(Objects.requireNonNull(fxmlPath, "FXML path cannot be null"));
+            Node view = loader.load();
+
+            if (passMedalControllerRef && "/com/duyphuc/olympics/fxml/MedalManagementView.fxml".equals(fxmlPath)) {
+                this.medalManagementControllerInstance = loader.getController();
+            }
+            
             loadViewIntoContentArea(view, true);
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
             AlertUtil.showError("Lỗi Tải Giao Diện", "Không thể tải giao diện: " + fxmlPath + "\nLỗi: " + e.getMessage());
-            handleShowDashboardHome(null);
+            handleShowDashboardHome(null); // Revert to home on error
         }
     }
+    
+    // Overloaded method for convenience if no controller reference needs to be passed or captured
+    private void loadViewIntoContentArea(String fxmlPath) {
+        loadViewIntoContentArea(fxmlPath, false);
+    }
+
 
     private void loadViewIntoContentArea(Node viewNode, boolean useFadeTransition) {
         if (contentArea == null) return;
@@ -288,14 +295,20 @@ public class MainDashboardController {
 
     @FXML void handleShowDashboardHome(ActionEvent event) {
         if (initialDashboardHomeView == null) { createInitialDashboardHomeView(); }
-        loadViewIntoContentArea(initialDashboardHomeView, true); updateWelcomeMessage();
-        if (olympicAnimation != null && olympicAnimationPlaceholder != null && !olympicAnimationPlaceholder.getChildren().contains(olympicAnimation.getRingsGroup())) {
+        loadViewIntoContentArea(initialDashboardHomeView, true); 
+        updateWelcomeMessage();
+        // Restart animation if necessary
+        if (olympicAnimation != null && olympicAnimationPlaceholder != null && 
+            !olympicAnimationPlaceholder.getChildren().contains(olympicAnimation.getRingsGroup())) {
             try {
                 olympicAnimationPlaceholder.getChildren().clear(); 
-                olympicAnimation = new OlympicRingsAnimation(olympicAnimationPlaceholder);
+                olympicAnimation = new OlympicRingsAnimation(olympicAnimationPlaceholder); // Re-initialize
                 olympicAnimation.startAnimation();
             } catch (Exception e) { System.err.println("Error restarting animation on home: " + e.getMessage()); }
-        } else if (olympicAnimation != null) { olympicAnimation.startAnimation(); }
+        } else if (olympicAnimation != null) { 
+            olympicAnimation.startAnimation(); // Ensure it's running
+        }
+        
         if (event != null && event.getSource() instanceof Button) { ((Button)event.getSource()).requestFocus(); } 
         else if (dashboardHomeButton != null) { dashboardHomeButton.requestFocus(); }
     }
@@ -334,7 +347,8 @@ public class MainDashboardController {
     }
 
     @FXML void handleManageMedals(ActionEvent event) {
-        loadViewIntoContentArea("/com/duyphuc/olympics/fxml/MedalManagementView.fxml");
+        // Pass true to indicate we want to capture the MedalManagementController instance
+        loadViewIntoContentArea("/com/duyphuc/olympics/fxml/MedalManagementView.fxml", true);
         if (event != null && event.getSource() instanceof Button) ((Button)event.getSource()).requestFocus();
     }
 
@@ -349,12 +363,55 @@ public class MainDashboardController {
             loadViewIntoContentArea("/com/duyphuc/olympics/fxml/AdminUserManagementView.fxml");
         } else {
             AlertUtil.showError("Truy Cập Bị Từ Chối", "Bạn không có quyền truy cập chức năng này.");
-            handleShowDashboardHome(null);
+            handleShowDashboardHome(null); // Go back to home
+        }
+        if (event != null && event.getSource() instanceof Button) ((Button)event.getSource()).requestFocus();
+    }
+
+    // <<< NEW METHOD >>>
+    @FXML
+    void handleManageOlympicEvents(ActionEvent event) {
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null || !"ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+            AlertUtil.showError("Truy Cập Bị Từ Chối", "Bạn không có quyền truy cập chức năng này.");
+            handleShowDashboardHome(null); // Go back to home
+            if (event != null && event.getSource() instanceof Button) ((Button)event.getSource()).requestFocus();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = FxmlLoaderUtil.getLoader("/com/duyphuc/olympics/fxml/AdminOlympicEventManagementView.fxml");
+            Parent root = loader.load();
+            
+            AdminOlympicEventManagementController controller = loader.getController();
+            if (this.medalManagementControllerInstance != null) {
+                 controller.setMedalManagementController(this.medalManagementControllerInstance);
+            } else {
+                // This is a common scenario if MedalManagementView hasn't been opened yet.
+                // The AdminOlympicEventManagementController should be designed to function
+                // even if medalManagementControllerInstance is null (e.g., not crash).
+                System.out.println("MainDashboard: MedalManagementController instance is null when opening AdminOlympicEventManagementView. This is okay if Medal Management screen wasn't opened first.");
+            }
+
+            Stage stage = new Stage();
+            stage.setTitle("Quản lý Sự kiện Olympic");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(mainDashboardPane.getScene().getWindow());
+            stage.setScene(new Scene(root));
+             try { stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/duyphuc/olympics/images/Olympic_rings.png"))));
+            } catch (Exception e) { System.err.println("Dialog icon not found.");}
+
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            AlertUtil.showError("Lỗi Tải Giao Diện", "Không thể tải giao diện Quản lý Sự kiện Olympic: " + e.getMessage());
+            e.printStackTrace();
         }
         if (event != null && event.getSource() instanceof Button) ((Button)event.getSource()).requestFocus();
     }
 
     public void cleanupDashboard() {
         if (olympicAnimation != null) { olympicAnimation.stopAnimation(); }
+        // Any other cleanup
     }
 }

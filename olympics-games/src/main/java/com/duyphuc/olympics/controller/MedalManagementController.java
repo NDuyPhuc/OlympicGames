@@ -15,8 +15,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 
-import java.sql.SQLException; // <<<--- ADD THIS IMPORT
-import java.util.List;      // <<<--- ADD THIS IMPORT if not already present
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional; // <<<--- ADD THIS IMPORT
 
 public class MedalManagementController {
 
@@ -51,7 +52,8 @@ public class MedalManagementController {
         medalService = new MedalService();
 
         setupTableColumns();
-        loadOlympicEvents(); // This will now be wrapped in try-catch
+        // loadOlympicEvents(); // <<<--- REMOVE OR COMMENT OUT THIS OLD CALL
+        refreshOlympicEventsComboBox(); // <<<--- ADD THIS CALL
         setupEventListeners();
 
         // (Extra) Setup search functionality
@@ -71,67 +73,120 @@ public class MedalManagementController {
         totalColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
     }
 
-    private void loadOlympicEvents() {
+    /**
+     * Reloads the Olympic events into the ComboBox.
+     * Can be called externally when the list of events changes.
+     */
+    public void refreshOlympicEventsComboBox() { // <<<--- THIS IS THE NEW/MODIFIED METHOD
+        OlympicEvent selectedCurrently = olympicEventComboBox.getSelectionModel().getSelectedItem();
+        // olympicEventComboBox.getItems().clear(); // Clearing and re-setting items can sometimes lose selection state or cause minor UI flickers.
+                                                // A more robust way is to update the underlying list of the ComboBox if it's already an ObservableList.
+                                                // However, for simplicity and given it's usually a full refresh, setItems is common.
+
+        try {
+            List<OlympicEvent> events = medalService.getEvents();
+            ObservableList<OlympicEvent> observableEvents = FXCollections.observableArrayList(events);
+            olympicEventComboBox.setItems(observableEvents);
+
+            // Try to re-select previously selected item if it still exists
+            if (selectedCurrently != null) {
+                Optional<OlympicEvent> reselect = events.stream()
+                                                       .filter(e -> e.getId() == selectedCurrently.getId())
+                                                       .findFirst();
+                if (reselect.isPresent()) {
+                    olympicEventComboBox.getSelectionModel().select(reselect.get());
+                } else {
+                    // If previously selected item no longer exists, clear selection and related UI
+                    olympicEventComboBox.getSelectionModel().clearSelection();
+                    // medalEntries.clear(); // This will be handled by the listener on selectedItemProperty if it becomes null
+                    // formPane.setDisable(true);
+                    // clearFormFields();
+                }
+            }
+            // If no event is selected (either initially or after failing to re-select), ensure UI state is correct.
+            // The listener on olympicEventComboBox.getSelectionModel().selectedItemProperty() should handle this.
+             if (olympicEventComboBox.getSelectionModel().getSelectedItem() == null) {
+                medalEntries.clear();
+                formPane.setDisable(true);
+                clearFormFields(); // Also clear form
+            }
+
+        } catch (SQLException e) {
+            AlertUtil.showError("Database Error", "Failed to reload Olympic events: " + e.getMessage());
+            olympicEventComboBox.getItems().clear(); // Clear items on error
+            olympicEventComboBox.setDisable(true);
+            medalEntries.clear(); // Clear table
+            formPane.setDisable(true); // Disable form
+            clearFormFields();
+        }
+    }
+
+    // The old private loadOlympicEvents() method can be removed if refreshOlympicEventsComboBox() completely replaces its functionality.
+    // If you choose to keep it for some internal reason, ensure it's not the one being called by initialize() anymore.
+    // For this fix, I'm assuming refreshOlympicEventsComboBox replaces it.
+    /*
+    private void loadOlympicEvents() { // <<<--- THIS CAN BE REMOVED OR KEPT IF USED ELSEWHERE INTERNALLY (but not from initialize)
         try {
             List<OlympicEvent> events = medalService.getEvents();
             olympicEventComboBox.setItems(FXCollections.observableArrayList(events));
         } catch (SQLException e) {
             AlertUtil.showError("Database Error", "Failed to load Olympic events: " + e.getMessage());
-            // Optionally, disable the ComboBox or other parts of the UI if events can't be loaded
             olympicEventComboBox.setDisable(true);
         }
     }
+    */
+
 
     private void setupEventListeners() {
         olympicEventComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldEvent, newEvent) -> {
             if (newEvent != null) {
-                loadMedalDataForSelectedEvent(newEvent); // This will now be wrapped in try-catch
-                formPane.setDisable(false); // Enable form when an event is selected
+                loadMedalDataForSelectedEvent(newEvent);
+                formPane.setDisable(false);
             } else {
-                medalEntries.clear(); // This is fine, no DB call
+                medalEntries.clear();
                 formPane.setDisable(true);
+                clearFormFields(); // Good to clear form if no event is selected
+                // Also ensure action buttons are disabled
+                updateButton.setDisable(true);
+                deleteButton.setDisable(true);
             }
         });
 
         medalTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             selectedMedalEntry = newSelection;
-            populateFormWithSelectedMedal(newSelection); // This is fine, no DB call
+            populateFormWithSelectedMedal(newSelection);
             updateButton.setDisable(newSelection == null);
             deleteButton.setDisable(newSelection == null);
         });
     }
 
-    // (Extra) Setup search functionality
     private void setupSearchFilter() {
-        filteredData = new FilteredList<>(medalEntries, p -> true); // Initially show all data
+        filteredData = new FilteredList<>(medalEntries, p -> true);
 
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(medalEntry -> {
                 if (newValue == null || newValue.isEmpty()) {
-                    return true; // Show all if search field is empty
+                    return true;
                 }
                 String lowerCaseFilter = newValue.toLowerCase();
-                // Ensure getNoc() is available and not null before calling toLowerCase()
                 return medalEntry.getNoc() != null && medalEntry.getNoc().toLowerCase().contains(lowerCaseFilter);
             });
         });
 
         SortedList<MedalEntry> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(medalTableView.comparatorProperty()); // Bind comparator
-        medalTableView.setItems(sortedData); // Set sorted and filtered data to table
+        sortedData.comparatorProperty().bind(medalTableView.comparatorProperty());
+        medalTableView.setItems(sortedData);
     }
 
 
     private void loadMedalDataForSelectedEvent(OlympicEvent event) {
         try {
             List<MedalEntry> medals = medalService.getMedalDataForEvent(event);
-            medalEntries.setAll(medals);
+            medalEntries.setAll(medals); // This will update the FilteredList -> SortedList -> TableView
         } catch (SQLException e) {
             AlertUtil.showError("Database Error", "Failed to load medal data for " + event.getEventName() + ": " + e.getMessage());
-            medalEntries.clear(); // Clear existing data on error
+            medalEntries.clear();
         }
-        // If not using FilteredList directly for search, you would set medalTableView.setItems(medalEntries);
-        // Since we use FilteredList, this change to medalEntries will be reflected.
     }
 
     private void populateFormWithSelectedMedal(MedalEntry entry) {
@@ -152,6 +207,10 @@ public class MedalManagementController {
             AlertUtil.showError("Selection Error", "Please select an Olympic event first.");
             return;
         }
+         if (selectedEvent.getTableNameInDb() == null || selectedEvent.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(selectedEvent.getTableNameInDb())) {
+            AlertUtil.showError("Event Error", "The selected Olympic event does not have an active medal table. Cannot add entries.");
+            return;
+        }
 
         try {
             String noc = nocTextField.getText().trim().toUpperCase();
@@ -168,27 +227,22 @@ public class MedalManagementController {
                 return;
             }
 
-            // Assuming MedalEntry constructor that takes these args, or use setters
             MedalEntry newEntry = new MedalEntry();
             newEntry.setNoc(noc);
             newEntry.setGold(gold);
             newEntry.setSilver(silver);
             newEntry.setBronze(bronze);
-            // If your MedalEntry class has a constructor like:
-            // public MedalEntry(String noc, int gold, int silver, int bronze)
-            // then: MedalEntry newEntry = new MedalEntry(noc, gold, silver, bronze);
 
-            // The `addMedal` method in MedalService now throws SQLException
             if (medalService.addMedal(newEntry, selectedEvent)) {
                 AlertUtil.showInfo("Success", "Medal entry added successfully. ID: " + newEntry.getId());
-                loadMedalDataForSelectedEvent(selectedEvent); // Refresh table
+                loadMedalDataForSelectedEvent(selectedEvent);
                 clearFormFields();
             } else {
-                AlertUtil.showError("Operation Failed", "Failed to add medal entry (no rows affected or ID not generated).");
+                AlertUtil.showError("Operation Failed", "Failed to add medal entry. The NOC might already exist for this event or an unknown error occurred.");
             }
         } catch (NumberFormatException e) {
             AlertUtil.showError("Input Error", "Please enter valid numbers for medal counts.");
-        } catch (SQLException e) { // <<<--- CATCH SQLException
+        } catch (SQLException e) {
             AlertUtil.showError("Database Error", "Failed to add medal entry: " + e.getMessage());
         }
     }
@@ -200,8 +254,12 @@ public class MedalManagementController {
             return;
         }
         OlympicEvent selectedEvent = olympicEventComboBox.getSelectionModel().getSelectedItem();
-        if (selectedEvent == null) { // Should not happen if an entry is selected but good check
+        if (selectedEvent == null) {
             AlertUtil.showError("Error", "No Olympic event context for update.");
+            return;
+        }
+        if (selectedEvent.getTableNameInDb() == null || selectedEvent.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(selectedEvent.getTableNameInDb())) {
+            AlertUtil.showError("Event Error", "The selected Olympic event does not have an active medal table. Cannot update entries.");
             return;
         }
 
@@ -220,24 +278,27 @@ public class MedalManagementController {
                 return;
             }
 
+            // Update the existing selectedMedalEntry object
             selectedMedalEntry.setNoc(noc);
             selectedMedalEntry.setGold(gold);
             selectedMedalEntry.setSilver(silver);
             selectedMedalEntry.setBronze(bronze);
-            // Total is automatically updated by setters in MedalEntry (assuming)
+            // Total is auto-updated by setters in MedalEntry
 
-            // The `updateMedal` method in MedalService now throws SQLException
             if (medalService.updateMedal(selectedMedalEntry, selectedEvent)) {
                 AlertUtil.showInfo("Success", "Medal entry updated successfully.");
-                loadMedalDataForSelectedEvent(selectedEvent); // Refresh table
+                // Refresh the specific item in the table view for immediate visual feedback
+                // medalTableView.refresh(); // This can refresh the whole table
+                // More targeted refresh if needed, but usually loadMedalDataForSelectedEvent is fine
+                loadMedalDataForSelectedEvent(selectedEvent); // Reloads all data for the event
                 clearFormFields();
-                medalTableView.getSelectionModel().clearSelection();
+                medalTableView.getSelectionModel().clearSelection(); // Deselect
             } else {
-                AlertUtil.showError("Operation Failed", "Failed to update medal entry (no rows affected).");
+                AlertUtil.showError("Operation Failed", "Failed to update medal entry. The NOC might have been changed to one that already exists, or an unknown error occurred.");
             }
         } catch (NumberFormatException e) {
             AlertUtil.showError("Input Error", "Please enter valid numbers for medal counts.");
-        } catch (SQLException e) { // <<<--- CATCH SQLException
+        } catch (SQLException e) {
             AlertUtil.showError("Database Error", "Failed to update medal entry: " + e.getMessage());
         }
     }
@@ -249,27 +310,29 @@ public class MedalManagementController {
             return;
         }
         OlympicEvent selectedEvent = olympicEventComboBox.getSelectionModel().getSelectedItem();
-        if (selectedEvent == null) { // Essential check
+        if (selectedEvent == null) {
             AlertUtil.showError("Error", "No Olympic event context for delete.");
             return;
         }
-
+        if (selectedEvent.getTableNameInDb() == null || selectedEvent.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(selectedEvent.getTableNameInDb())) {
+            AlertUtil.showError("Event Error", "The selected Olympic event does not have an active medal table. Cannot delete entries.");
+            return;
+        }
 
         boolean confirmed = AlertUtil.showConfirmation("Confirm Delete",
                 "Are you sure you want to delete the medal entry for " + selectedMedalEntry.getNoc() + "?");
 
         if (confirmed) {
             try {
-                // The `deleteMedal` method in MedalService now throws SQLException
                 if (medalService.deleteMedal(selectedMedalEntry, selectedEvent)) {
                     AlertUtil.showInfo("Success", "Medal entry deleted successfully.");
-                    loadMedalDataForSelectedEvent(selectedEvent); // Refresh table
+                    loadMedalDataForSelectedEvent(selectedEvent);
                     clearFormFields();
                     medalTableView.getSelectionModel().clearSelection();
                 } else {
-                    AlertUtil.showError("Operation Failed", "Failed to delete medal entry (no rows affected).");
+                    AlertUtil.showError("Operation Failed", "Failed to delete medal entry.");
                 }
-            } catch (SQLException e) { // <<<--- CATCH SQLException
+            } catch (SQLException e) {
                 AlertUtil.showError("Database Error", "Failed to delete medal entry: " + e.getMessage());
             }
         }
@@ -278,8 +341,7 @@ public class MedalManagementController {
     @FXML
     private void handleClearFormAction() {
         clearFormFields();
-        medalTableView.getSelectionModel().clearSelection(); // Deselect row
-        // selectedMedalEntry = null; // This is implicitly handled by table selection listener
+        medalTableView.getSelectionModel().clearSelection();
     }
 
     private void clearFormFields() {
@@ -287,5 +349,7 @@ public class MedalManagementController {
         goldTextField.clear();
         silverTextField.clear();
         bronzeTextField.clear();
+        // Optionally, reset focus
+        // nocTextField.requestFocus();
     }
 }

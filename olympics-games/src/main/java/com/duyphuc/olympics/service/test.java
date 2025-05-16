@@ -7,6 +7,6 @@ public class test { // Đặt tên khác để tránh nhầm lẫn
         String plainPassword = "admin123";
         String hashedPassword = DigestUtils.sha256Hex(plainPassword);
         System.out.println("Hash SHA-256 cho 'admin123' là: " + hashedPassword);
-        // Output sẽ là: a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3
+        // Output sẽ là: 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
     }
 }
