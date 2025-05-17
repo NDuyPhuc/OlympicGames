@@ -56,6 +56,19 @@
 
 .generate-chart-button:hover {
     -fx-background-color: #2980b9; /* Darker blue on hover */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 1);
+    -fx-cursor: hand; /* Change cursor to hand on hover */
+    -fx-text-fill: #ecf0f1; /* Light text color on hover */
+    -fx-font-weight: bold; /* Make text bold on hover */
+    -fx-padding: 10px 20px; /* Add padding on hover */
+    -fx-border-color: #2980b9; /* Border color on hover */
+    -fx-border-width: 2px; /* Border width on hover */
+    -fx-border-radius: 5px; /* Rounded corners on hover */
+    -fx-border-style: solid; /* Solid border on hover */
+    -fx-border-insets: 0; /* No insets on border */
+    -fx-border-image-insets: 0; /* No insets on border image */
+    -fx-border-image-width: 0; /* No width on border image */
+	
 }
 
 .generate-chart-button:pressed {

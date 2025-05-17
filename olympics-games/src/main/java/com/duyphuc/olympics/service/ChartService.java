@@ -19,16 +19,9 @@ import java.awt.Font;
 import java.util.List;
 import java.util.Map;
 
-public class ChartService {
+public class ChartService implements IChartService {
 
-    /**
-     * Tạo biểu đồ cột Top N quốc gia.
-     * @param topNMedals Danh sách MedalEntry của các quốc gia top N
-     * @param event Kỳ Olympic (dùng cho tiêu đề)
-     * @param N Số lượng (dùng cho tiêu đề)
-     * @param sortBy Tiêu chí ("Gold", "Silver", "Bronze", "Total")
-     * @return ChartPanel chứa biểu đồ
-     */
+    @Override
     public ChartPanel createTopNCountriesBarChart(List<MedalEntry> topNMedals, OlympicEvent event, int N, String sortBy) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         // Đảm bảo sortBy không null để tránh NullPointerException
@@ -76,12 +69,7 @@ public class ChartService {
         return new ChartPanel(barChart);
     }
 
-    /**
-     * Tạo biểu đồ tròn tỷ lệ Vàng/Bạc/Đồng của một quốc gia.
-     * @param countryMedals Dữ liệu huy chương của quốc gia
-     * @param event Kỳ Olympic (dùng cho tiêu đề)
-     * @return ChartPanel chứa biểu đồ
-     */
+    @Override
     public ChartPanel createMedalDistributionPieChart(MedalEntry countryMedals, OlympicEvent event) {
         String eventName = (event != null && event.getEventName() != null) ? event.getEventName() : "Unknown Event";
         String countryNoc = (countryMedals != null && countryMedals.getNoc() != null) ? countryMedals.getNoc() : "N/A";
@@ -130,13 +118,7 @@ public class ChartService {
         return new ChartPanel(pieChart);
     }
 
-    /**
-     * Tạo biểu đồ đường xu hướng huy chương của một quốc gia qua các kỳ Olympic.
-     * @param medalTrendData Map dữ liệu: Năm -> Số lượng huy chương
-     * @param NOC Mã quốc gia
-     * @param yAxisLabel Nhãn trục Y (ví dụ: "Total Medals", "Gold Medals")
-     * @return ChartPanel chứa biểu đồ
-     */
+    @Override
     public ChartPanel createCountryTrendLineChart(Map<Integer, Integer> medalTrendData, String NOC, String yAxisLabel) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         String countryCode = (NOC == null) ? "Unknown Country" : NOC;

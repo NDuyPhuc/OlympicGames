@@ -10,8 +10,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OlympicEventDAO {
+public class OlympicEventDAO implements IOlympicEventDAO { // Thêm implements
 
+    @Override
     public List<OlympicEvent> getAllEvents() throws SQLException {
         List<OlympicEvent> events = new ArrayList<>();
         String sql = "SELECT id, event_name, year, event_type, table_name_in_db FROM olympic_events ORDER BY year DESC, event_name";
@@ -31,16 +32,8 @@ public class OlympicEventDAO {
         return events;
     }
 
-    /**
-     * Adds a new Olympic event to the olympic_events table.
-     * table_name_in_db is NOT set here; it will be updated later.
-     * @param event The OlympicEvent object (must have eventName, year, eventType).
-     * @param conn The database connection (transaction managed by service).
-     * @return The auto-generated ID of the new event.
-     * @throws SQLException if a database access error occurs.
-     */
+    @Override
     public int addOlympicEvent(OlympicEvent event, Connection conn) throws SQLException {
-        // Insert only the initial details. table_name_in_db will be updated later.
         String sql = "INSERT INTO olympic_events (event_name, year, event_type) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, event.getEventName());
@@ -58,13 +51,7 @@ public class OlympicEventDAO {
         }
     }
 
-    /**
-     * Updates the table_name_in_db for an existing Olympic event.
-     * @param eventId The ID of the event to update.
-     * @param tableName The new table name.
-     * @param conn The database connection (transaction managed by service).
-     * @throws SQLException if a database access error occurs.
-     */
+    @Override
     public void updateOlympicEventTableName(int eventId, String tableName, Connection conn) throws SQLException {
         String sql = "UPDATE olympic_events SET table_name_in_db = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -77,13 +64,12 @@ public class OlympicEventDAO {
         }
     }
 
+    @Override
     public void deleteOlympicEventById(int eventId, Connection conn) throws SQLException {
         String sql = "DELETE FROM olympic_events WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, eventId);
             pstmt.executeUpdate();
-            // No need to check affectedRows strictly, as it might have been deleted by another process,
-            // but the drop table operation is more critical.
         }
     }
 }

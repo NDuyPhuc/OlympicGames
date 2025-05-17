@@ -2,6 +2,8 @@ package com.duyphuc.olympics.service;
 
 import com.duyphuc.olympics.dao.MedalDAO;
 import com.duyphuc.olympics.dao.OlympicEventDAO;
+import com.duyphuc.olympics.dao.IMedalDAO;
+import com.duyphuc.olympics.dao.IOlympicEventDAO;
 import com.duyphuc.olympics.db.DBConnectionManager;
 import com.duyphuc.olympics.model.MedalEntry;
 import com.duyphuc.olympics.model.OlympicEvent;
@@ -19,20 +21,21 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 
-public class MedalService {
-    private final OlympicEventDAO olympicEventDAO;
-    private final MedalDAO medalDAO;
+public class MedalService implements IMedalService {
+    private final IOlympicEventDAO  olympicEventDAO;
+    private final IMedalDAO medalDAO;
 
     public MedalService() {
         this.olympicEventDAO = new OlympicEventDAO();
         this.medalDAO = new MedalDAO();
     }
 
-    // ... other existing methods ...
+    @Override
     public List<OlympicEvent> getEvents() throws SQLException {
         return olympicEventDAO.getAllEvents();
     }
-
+    
+    @Override
     public List<MedalEntry> getMedalDataForEvent(OlympicEvent event) throws SQLException {
         if (event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty()) {
             System.err.println("Invalid event or table name for fetching medal data.");
@@ -44,7 +47,8 @@ public class MedalService {
         }
         return medalDAO.getMedalsByEventTable(event.getTableNameInDb());
     }
-    // ... (addMedal, updateMedal, deleteMedal for MedalEntry instances)
+
+    @Override
     public boolean addMedal(MedalEntry entry, OlympicEvent event) throws SQLException {
         if (entry == null || event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(event.getTableNameInDb())) {
             return false;
@@ -52,6 +56,7 @@ public class MedalService {
         return medalDAO.addMedalEntry(entry, event.getTableNameInDb());
     }
 
+    @Override
     public boolean updateMedal(MedalEntry entry, OlympicEvent event) throws SQLException {
         if (entry == null || event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty() || entry.getId() <= 0 || "PENDING_CREATION".equals(event.getTableNameInDb())) {
             return false;
@@ -59,6 +64,7 @@ public class MedalService {
         return medalDAO.updateMedalEntry(entry, event.getTableNameInDb());
     }
 
+    @Override
     public boolean deleteMedal(MedalEntry entry, OlympicEvent event) throws SQLException {
         if (entry == null || event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty() || entry.getId() <= 0 || "PENDING_CREATION".equals(event.getTableNameInDb())) {
             return false;
@@ -66,6 +72,7 @@ public class MedalService {
         return medalDAO.deleteMedalEntry(entry.getId(), event.getTableNameInDb());
     }
 
+    @Override
     public List<String> getAllNOCsForEvent(OlympicEvent event) throws SQLException {
         if (event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(event.getTableNameInDb())) {
             return new ArrayList<>();
@@ -73,6 +80,7 @@ public class MedalService {
         return medalDAO.getNOCsByEventTable(event.getTableNameInDb());
     }
 
+    @Override
     public List<MedalEntry> getTopNCountriesForEvent(OlympicEvent event, int N, String sortBy) throws SQLException {
         if (event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(event.getTableNameInDb())) {
             return new ArrayList<>();
@@ -94,12 +102,14 @@ public class MedalService {
         return allMedals.stream().sorted(comparator).limit(N).collect(Collectors.toList());
     }
 
+    @Override
     public MedalEntry getMedalDataForCountryInEvent(OlympicEvent event, String NOC_Code) throws SQLException {
         if (event == null || event.getTableNameInDb() == null || event.getTableNameInDb().isEmpty() || "PENDING_CREATION".equals(event.getTableNameInDb()) || NOC_Code == null || NOC_Code.trim().isEmpty()) return null;
         List<MedalEntry> allMedals = medalDAO.getMedalsByEventTable(event.getTableNameInDb());
         return allMedals.stream().filter(entry -> NOC_Code.equals(entry.getNoc())).findFirst().orElse(null);
     }
 
+    @Override
     public Map<Integer, Integer> getMedalTrendForCountry(String NOC_Code, List<OlympicEvent> allEvents, String medalType) throws SQLException {
         if (NOC_Code == null || NOC_Code.trim().isEmpty() || allEvents == null) return new HashMap<>();
         Map<Integer, Integer> trendData = new TreeMap<>();
@@ -123,6 +133,7 @@ public class MedalService {
     }
 
 
+    @Override
     public OlympicEvent createOlympicEventWithTable(String eventName, int year, String eventType) throws SQLException {
         Connection conn = null;
         OlympicEvent newEvent = new OlympicEvent();
@@ -173,6 +184,7 @@ public class MedalService {
         }
     }
 
+    @Override
     public void deleteOlympicEventWithTable(OlympicEvent event) throws SQLException {
         if (event == null || event.getId() <= 0 ) { // table_name_in_db can be null if it was never fully created
             throw new IllegalArgumentException("Invalid OlympicEvent object provided for deletion (ID missing).");

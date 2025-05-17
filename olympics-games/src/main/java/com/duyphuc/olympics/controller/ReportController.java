@@ -4,6 +4,8 @@ import com.duyphuc.olympics.model.MedalEntry;
 import com.duyphuc.olympics.model.OlympicEvent;
 import com.duyphuc.olympics.service.MedalService;
 import com.duyphuc.olympics.service.ReportService;
+import com.duyphuc.olympics.service.IMedalService;
+import com.duyphuc.olympics.service.IReportService;
 import com.duyphuc.olympics.util.AlertUtil;
 
 import javafx.collections.FXCollections;
@@ -40,23 +42,18 @@ public class ReportController {
     @FXML private Button generateReportButton;
     @FXML private Button exportReportButton;
 
-    private ReportService reportService;
-    private MedalService medalService; // Cần để lấy danh sách Olympic Events
+    private IReportService reportService;
+    private IMedalService medalService; // Cần để lấy danh sách Olympic Events
 
     private ProgressIndicator loadingIndicator; // Để hiển thị khi đang tải
 
     public void initialize() {
-        // Khởi tạo service
-        // Trong một ứng dụng lớn hơn, bạn có thể dùng Dependency Injection (DI)
-        // hoặc một ServiceLocator pattern.
+       
         this.medalService = new MedalService(/*Khởi tạo DAO nếu cần*/);
         this.reportService = new ReportService(this.medalService);
 
-        // Khởi tạo ProgressIndicator (thêm vào FXML nếu muốn có vị trí cố định)
         loadingIndicator = new ProgressIndicator();
         loadingIndicator.setVisible(false);
-        // Ví dụ: reportViewPane.getChildren().add(loadingIndicator); nếu muốn nó ở cuối VBox.
-        // Hoặc bạn có thể tạo một StackPane bao quanh TextArea và đặt nó ở đó.
 
         setupReportTypeComboBox();
         setupOlympicEventComboBox();

@@ -1,6 +1,7 @@
 // src/main/java/com/duyphuc/olympics/service/AuthService.java
 package com.duyphuc.olympics.service;
 
+import com.duyphuc.olympics.dao.IUserDAO;
 import com.duyphuc.olympics.dao.UserDAO;
 import com.duyphuc.olympics.exception.AuthenticationException; // Đảm bảo import đúng
 import com.duyphuc.olympics.model.User;
@@ -11,10 +12,10 @@ import java.util.HashMap;     // Thêm import
 import java.util.Map;         // Thêm import
 import java.util.Optional;
 
-public class AuthService {
+public class AuthService implements IAuthService{
 
-    private static AuthService instance;
-    private final UserDAO userDAO;
+    private static IAuthService  instance;
+    private final IUserDAO userDAO;
     private User currentUser;
 
     // Cấu hình cho việc khóa tài khoản
@@ -39,21 +40,14 @@ public class AuthService {
         this.userDAO = new UserDAO();
     }
 
-    public static synchronized AuthService getInstance() {
+    public static synchronized IAuthService getInstance() {
         if (instance == null) {
             instance = new AuthService();
         }
         return instance;
     }
 
-    /**
-     * Attempts to log in a user.
-     * @param username The username.
-     * @param password The plain text password.
-     * @return The User object if login is successful.
-     * @throws AuthenticationException if login fails due to invalid credentials,
-     *                                 account lockout, or empty input.
-     */
+    @Override
     public User login(String username, String password) throws AuthenticationException {
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             // Ném exception thay vì chỉ in ra lỗi và trả về null
@@ -101,6 +95,7 @@ public class AuthService {
         }
     }
 
+    
     private void incrementFailedAttempts(String username, LoginAttemptInfo attemptInfo, String baseErrorMessage) throws AuthenticationException {
         attemptInfo.failedAttempts++;
         loginAttempts.put(username, attemptInfo);
@@ -128,7 +123,7 @@ public class AuthService {
         System.out.println("AuthService: Reset số lần đăng nhập thất bại cho user '" + username + "'.");
     }
 
-
+    @Override
     public void logout() {
         if (this.currentUser != null) {
             System.out.println("AuthService: User '" + this.currentUser.getUsername() + "' logged out.");
@@ -138,11 +133,13 @@ public class AuthService {
         this.currentUser = null;
     }
 
+    @Override
     public User getCurrentUser() {
         return this.currentUser;
     }
 
-    public boolean registerUser(String username, String plainPassword, String email, String role) {
+    @Override
+    public boolean registerUser(String username, String plainPassword, String email, String role) throws SQLException {
         if (username == null || username.isEmpty() ||
             plainPassword == null || plainPassword.isEmpty() ||
             email == null || email.isEmpty() ||
@@ -178,6 +175,7 @@ public class AuthService {
         return success;
     }
 
+    @Override
     public boolean changePassword(String username, String oldPassword, String newPassword) throws AuthenticationException {
         if (username == null || username.isEmpty() ||
             oldPassword == null || oldPassword.isEmpty() ||

@@ -1,10 +1,12 @@
+/* CSS cho AdminUserManagementStyles.css */
+
 .root-pane-admin {
-    -fx-background-color: #ECEFF1; /* Material Design Blue Grey 50 */
+    -fx-background-color: #ECEFF1;
     -fx-font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 .header-box {
-    -fx-background-color: #3F51B5; /* Material Design Indigo 500 */
+    -fx-background-color: #3F51B5;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, 2);
 }
 
@@ -15,13 +17,13 @@
 }
 
 .action-toolbar {
-    -fx-background-color: #CFD8DC; /* Material Design Blue Grey 100 */
+    -fx-background-color: #CFD8DC;
     -fx-padding: 5px;
 }
 
 .toolbar-button {
     -fx-font-size: 13px;
-    -fx-text-fill: #263238; /* Material Design Blue Grey 800 */
+    -fx-text-fill: #263238;
     -fx-background-color: transparent;
     -fx-padding: 6px 12px;
     -fx-border-radius: 4px;
@@ -30,7 +32,9 @@
 }
 
 .toolbar-button:hover {
-    -fx-background-color: #B0BEC5; /* Material Design Blue Grey 200 */
+    -fx-background-color: #B0BEC5;
+    -fx-text-fill: #1B5E20;
+	-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0.5, 0, 2);
 }
 
 .toolbar-button:disabled {
@@ -38,39 +42,56 @@
     -fx-cursor: default;
 }
 
-.add-button:hover { -fx-text-fill: #1B5E20; /* Dark Green */ }
-.edit-button:hover { -fx-text-fill: #E65100; /* Dark Orange */ }
-.delete-button:hover { -fx-text-fill: #B71C1C; /* Dark Red */ }
-.refresh-button:hover { -fx-text-fill: #0D47A1; /* Dark Blue */ }
+.add-button:hover { -fx-text-fill: #1B5E20; 
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0.5, 0, 2);
+}
+
+.edit-button:hover { -fx-text-fill: #E65100; 
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0.5, 0, 2);
+}
+.delete-button:hover { -fx-text-fill: #B71C1C; 
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0.5, 0, 2);
+}
+.refresh-button:hover { -fx-text-fill: #0D47A1; 
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0.5, 0, 2);
+}
 
 
 .users-table {
-    -fx-selection-bar: #7E57C2; /* Material Design Deep Purple 300 */
-    -fx-selection-bar-non-focused: #B39DDB; /* Material Design Deep Purple 200 */
+    -fx-selection-bar: #7E57C2;
+    -fx-selection-bar-non-focused: #B39DDB;
 }
 
 .users-table .column-header-background {
-    -fx-background-color: #5C6BC0; /* Material Design Indigo 400 */
+    -fx-background-color: #5C6BC0;
 }
 
-.users-table .column-header .label {
-    -fx-text-fill: white;
+.users-table .column-header .label { /* Màu chữ của tiêu đề cột */
+    -fx-text-fill: black;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER_LEFT;
+    -fx-alignment: CENTER_LEFT; /* Mặc định cho tiêu đề */
     -fx-padding: 8px;
+	
 }
+
+/* Căn giữa tiêu đề cho các cột có class table-column-center */
+.users-table .table-column.table-column-center .column-header .label {
+    -fx-alignment: CENTER; /* Ghi đè alignment cho tiêu đề cột cụ thể */
+}
+
 
 .users-table .table-column {
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 5px;
+    /* -fx-alignment: CENTER_LEFT;  Không cần thiết ở đây, sẽ set cho cell */
+    -fx-padding: 5px; /* Padding cho toàn bộ cột, có thể không cần */
 }
-.users-table .table-column-center .label{
-    -fx-alignment: CENTER;
-}
+
 .users-table .table-cell {
-    -fx-border-color: transparent #E0E0E0 transparent transparent; /* Light grey vertical lines */
+    -fx-border-color: transparent #E0E0E0 transparent transparent;
     -fx-padding: 6px;
+    -fx-alignment: CENTER_LEFT; /* Căn lề mặc định cho nội dung cell */
+    /* -fx-text-fill: #333333; /* Màu chữ mặc định cho tất cả các cell nếu muốn */
 }
+
 
 
 .status-bar {
@@ -81,16 +102,33 @@
 
 .status-bar .label {
     -fx-font-size: 12px;
-    -fx-text-fill: #546E7A; /* Material Design Blue Grey 600 */
+    -fx-text-fill: #546E7A;
 }
 
 /* Styles for UserFormDialog.fxml */
 .dialog-pane {
     -fx-font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 20px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+	
 }
-
+.header-label-name {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F51B5;
+    -fx-padding-bottom: 10px;
+    -fx-text-fill: black;
+}
+.header-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F51B5;
+    -fx-padding-bottom: 10px;
+}
 .dialog-pane .header-panel {
-    -fx-background-color: #3F51B5; /* Material Design Indigo 500 */
+    -fx-background-color: #3F51B5;
 }
 
 .dialog-pane .header-panel .label {
@@ -101,8 +139,8 @@
 
 .form-label-dialog {
     -fx-font-size: 14px;
-    -fx-text-fill: #37474F; /* Material Design Blue Grey 700 */
-    -fx-padding-top: 5px; /* Align better with text fields */
+    -fx-text-fill: #37474F;
+    -fx-padding-top: 5px;
 }
 
 .form-field-dialog {
@@ -114,7 +152,11 @@
     -fx-border-width: 1.5px;
 }
 
-/* Placeholder text color */
 .text-field .text, .password-field .text {
-    -fx-fill: #78909C; /* Material Design Blue Grey 300 */
+    -fx-fill: #78909C;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #3F51B5;
+    -fx-border-width: 1.5px;
 }

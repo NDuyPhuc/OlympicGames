@@ -1,9 +1,11 @@
+//com.duyphuc.olympics.MainApp.java
 package com.duyphuc.olympics;
 
 import com.duyphuc.olympics.controller.LoginController;
 import com.duyphuc.olympics.controller.MainDashboardController;
 import com.duyphuc.olympics.db.DBConnectionManager;
 import com.duyphuc.olympics.service.AuthService;
+import com.duyphuc.olympics.service.IAuthService;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -66,7 +68,7 @@ public class MainApp extends Application {
         }
     }
 
-    public static void showMainDashboardScene(Stage stage, AuthService authService) throws IOException {
+    public static void showMainDashboardScene(Stage stage, IAuthService authService) throws IOException {
         cleanupCurrentController();
 
         FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/duyphuc/olympics/fxml/MainDashboardView.fxml"));

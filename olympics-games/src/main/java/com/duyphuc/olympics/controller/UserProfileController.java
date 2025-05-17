@@ -2,6 +2,7 @@ package com.duyphuc.olympics.controller;
 
 import com.duyphuc.olympics.model.User;
 import com.duyphuc.olympics.service.AuthService;
+import com.duyphuc.olympics.service.IAuthService;
 import com.duyphuc.olympics.util.AlertUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -21,11 +22,11 @@ public class UserProfileController {
     @FXML private Button btnChangePassword;
     @FXML private Button btnClose;
 
-    private AuthService authService;
+    private IAuthService authService;
     private User currentUser;
 
     public void initialize() {
-        // authService = AuthService.getInstance(); // Hoặc inject
+         authService = AuthService.getInstance(); // Hoặc inject
         // Vì AuthService có thể chưa được khởi tạo khi FXML này được load lần đầu
         // (ví dụ khi ứng dụng mới mở, chưa login), việc lấy currentUser
         // nên được thực hiện sau khi màn hình này được hiển thị và có user login.
@@ -44,9 +45,9 @@ public class UserProfileController {
     }
 
     // Phương thức này sẽ được gọi từ controller mở cửa sổ UserProfile
-    public void initData(User user, AuthService service) {
+    public void initData(User user, IAuthService authService2) {
         this.currentUser = user;
-        this.authService = service; // Nhận AuthService từ bên ngoài
+        this.authService = authService2; // Nhận AuthService từ bên ngoài
 
         if (currentUser != null) {
             txtUsername.setText(currentUser.getUsername());

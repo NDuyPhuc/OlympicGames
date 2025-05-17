@@ -4,6 +4,7 @@ import com.duyphuc.olympics.MainApp;
 import com.duyphuc.olympics.animation.OlympicRingsAnimation;
 import com.duyphuc.olympics.model.User;
 import com.duyphuc.olympics.service.AuthService;
+import com.duyphuc.olympics.service.IAuthService;
 import com.duyphuc.olympics.util.AlertUtil;
 import com.duyphuc.olympics.util.FxmlLoaderUtil;
 
@@ -58,7 +59,7 @@ public class MainDashboardController {
 
     private Node initialDashboardHomeView;
     private Label welcomeMessageLabel;
-    private AuthService authService;
+    private IAuthService authService;
     private OlympicRingsAnimation olympicAnimation;
 
     private boolean sidebarCollapsed = false;

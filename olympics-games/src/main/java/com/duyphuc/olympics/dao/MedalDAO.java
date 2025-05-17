@@ -7,20 +7,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement; // Added for CREATE/DROP
+import java.sql.Statement; 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MedalDAO {
+public class MedalDAO implements IMedalDAO  {
 
-    // --- Existing methods (getMedalsByEventTable, addMedalEntry, etc.) ---
-    // Ensure methods like addMedalEntry, updateMedalEntry, deleteMedalEntry
-    // can accept a Connection parameter if they are to be part of a larger transaction,
-    // or they can continue to manage their own connections if they are standalone operations.
-    // For simplicity here, I'll assume they manage their own connections for CRUD on medal entries,
-    // but create/drop table will be part of a service-managed transaction.
-
+	@Override
     public List<MedalEntry> getMedalsByEventTable(String tableName) throws SQLException {
         List<MedalEntry> medals = new ArrayList<>();
         // Sanitize table name slightly, though it should be system-generated
@@ -46,7 +40,8 @@ public class MedalDAO {
         // SQLException will be thrown upwards
         return medals;
     }
-
+	
+	@Override
     public boolean addMedalEntry(MedalEntry entry, String tableName) throws SQLException {
         if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
              System.err.println("Invalid table name for add: " + tableName);
@@ -75,7 +70,8 @@ public class MedalDAO {
             return false;
         }
     }
-
+	
+	@Override
     public boolean updateMedalEntry(MedalEntry entry, String tableName) throws SQLException {
         if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
             System.err.println("Invalid table name for update: " + tableName);
@@ -96,6 +92,7 @@ public class MedalDAO {
         }
     }
 
+	@Override
     public boolean deleteMedalEntry(int entryId, String tableName) throws SQLException {
          if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
             System.err.println("Invalid table name for delete: " + tableName);
@@ -109,6 +106,7 @@ public class MedalDAO {
         }
     }
     
+	@Override
     public List<String> getNOCsByEventTable(String tableName) throws SQLException {
         List<String> nocs = new ArrayList<>();
         if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
@@ -126,14 +124,8 @@ public class MedalDAO {
         return nocs;
     }
 
-    // --- New methods for table creation/deletion ---
-
-    /**
-     * Creates a new medal table for an Olympic event.
-     * @param tableName The name of the table to create.
-     * @param conn The database connection (transaction managed by service).
-     * @throws SQLException if a database access error occurs.
-     */
+    
+    @Override
     public void createMedalTable(String tableName, Connection conn) throws SQLException {
         // Basic sanitization for table name (should be system-generated)
         if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
@@ -154,13 +146,8 @@ public class MedalDAO {
         }
     }
 
-    /**
-     * Drops an existing medal table.
-     * @param tableName The name of the table to drop.
-     * @param conn The database connection (transaction managed by service).
-     * @throws SQLException if a database access error occurs.
-     */
-    public void dropMedalTable(String tableName, Connection conn) throws SQLException {
+   @Override
+   public void dropMedalTable(String tableName, Connection conn) throws SQLException {
         // Basic sanitization
         if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
             throw new SQLException("Invalid table name format for drop: " + tableName);

@@ -10,7 +10,7 @@
     -fx-background-color: #2C3E50; /* Màu nền của header */
     -fx-padding: 8px 15px; /* Padding cho header */
 }
-
+/* Nút toggle sidebar */
 .toggle-sidebar-button {
     -fx-background-color: transparent;
     -fx-text-fill: white;
@@ -21,10 +21,15 @@
     -fx-border-radius: 3px;
     -fx-background-radius: 3px;
 }
+/* Hiệu ứng hover cho nút toggle */
 .toggle-sidebar-button:hover {
     -fx-background-color: rgba(255, 255, 255, 0.15);
-}
+    -fx-text-fill: #ECF0F1; /* Màu chữ sáng hơn khi hover */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 2);
+    -fx-cursor: hand; /* Đổi con trỏ thành tay khi hover */
 
+}
+/* Hiệu ứng khi nhấn nút toggle */
 .main-header-title {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
@@ -63,6 +68,16 @@
 .nav-button:hover, .nav-button-admin:hover, .nav-button-logout:hover {
     -fx-background-color: #34495E; 
     -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 2);
+    -fx-cursor: hand; /* Đổi con trỏ thành tay khi hover */
+    -fx-border-radius: 0; /* Không bo góc để trông liền mạch */
+    -fx-background-radius: 0;
+    -fx-padding: 10px 15px; /* Đảm bảo padding không thay đổi khi hover */
+    -fx-graphic-text-gap: 12px; /* Khoảng cách giữa icon và text */
+    -fx-alignment: CENTER_LEFT; /* Căn giữa icon và text */
+    -fx-border-width: 0 0 0 4px; /* Đường kẻ trái để chỉ thị active */
+    -fx-border-color: #F1C40F; /* Màu vàng cho đường kẻ trái */
+
 }
 
 .nav-button:focused, .nav-button-admin:focused, .nav-button-logout:focused {

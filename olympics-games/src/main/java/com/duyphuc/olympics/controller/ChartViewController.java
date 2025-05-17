@@ -4,6 +4,8 @@ import com.duyphuc.olympics.model.OlympicEvent;
 import com.duyphuc.olympics.model.MedalEntry;
 import com.duyphuc.olympics.service.ChartService;
 import com.duyphuc.olympics.service.MedalService;
+import com.duyphuc.olympics.service.IChartService;
+import com.duyphuc.olympics.service.IMedalService;
 import com.duyphuc.olympics.util.AlertUtil;
 
 import javafx.application.Platform;
@@ -53,8 +55,8 @@ public class ChartViewController {
     @FXML private SwingNode swingNodeChart;
     @FXML private StackPane chartContainerPane; // Container của SwingNode
 
-    private MedalService medalService;
-    private ChartService chartService;
+    private IMedalService medalService;
+    private IChartService chartService;
 
     private ObservableList<OlympicEvent> olympicEventsList;
     private ObservableList<String> nocList = FXCollections.observableArrayList();

@@ -6,6 +6,7 @@ import com.duyphuc.olympics.animation.ParticleSystem;
 import com.duyphuc.olympics.exception.AuthenticationException; // Đã có
 import com.duyphuc.olympics.model.User;
 import com.duyphuc.olympics.service.AuthService;
+import com.duyphuc.olympics.service.IAuthService;
 import com.duyphuc.olympics.util.AlertUtil;
 
 import io.github.palexdev.materialfx.controls.MFXTextField;
@@ -44,7 +45,7 @@ public class LoginController {
     @FXML private Label messageLabel;
     @FXML private MFXButton loginButton;
 
-    private AuthService authService;
+    private IAuthService authService;
     private ParticleSystem particleSystem;
     private OlympicRingsAnimation olympicRingsAnimation;
     private Timer countdownTimer;

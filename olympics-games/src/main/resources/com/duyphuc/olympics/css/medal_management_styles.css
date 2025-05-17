@@ -40,10 +40,28 @@
 }
 .combo-box-custom .list-cell:hover {
     -fx-background-color: #e0e6ef; /* Light blue hover */
+    -fx-text-fill: #2c3e50; /* Dark text on hover */
+    -fx-cursor: hand; /* Hand cursor on hover */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 1, 1);
+    -fx-padding: 5px 8px; /* Padding for hover effect */
+    -fx-background-radius: 5px; /* Rounded corners on hover */
+    -fx-border-radius: 5px; /* Rounded corners on hover */
+    -fx-border-color: #bdc3c7; /* Light silver border on hover */
+    -fx-border-width: 1px; /* Border width on hover */
+    -fx-border-style: solid; /* Solid border on hover */
 }
 .combo-box-custom .list-cell:selected {
     -fx-background-color: #3498db; /* Blue selection */
     -fx-text-fill: white;
+    -fx-cursor: hand; /* Hand cursor on selection */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 1, 1);
+    -fx-padding: 5px 8px; /* Padding for selected item */
+    -fx-background-radius: 5px; /* Rounded corners on selection */
+    -fx-border-radius: 5px; /* Rounded corners on selection */
+    -fx-border-color: #2980b9; /* Darker blue border on selection */
+    -fx-border-width: 1px; /* Border width on selection */
+    -fx-border-style: solid; /* Solid border on selection */
+    
 }
 
 
@@ -116,6 +134,12 @@
 }
 .button:hover {
     -fx-opacity: 0.9;
+    -fx-background-color: #2980b9; /* Darker blue on hover */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 1, 1);
+    -fx-cursor: hand; /* Hand cursor on hover */
+    -fx-text-fill: #ecf0f1; /* Light text color on hover */
+    -fx-background-radius: 5px; /* Rounded corners on hover */
+    -fx-border-radius: 5px; /* Rounded corners on hover */
 }
 .button:pressed {
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);
