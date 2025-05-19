@@ -130,7 +130,7 @@
                 <configuration>
                     <!-- Sửa mainClass thành Launcher nếu bạn muốn dùng mvn javafx:run -->
                     <!-- Nếu chỉ build fat JAR, dòng này không quá quan trọng bằng mainClass trong shade plugin -->
-                    <mainClass>com.duyphuc.olympics.Launcher</mainClass>
+                    <mainClass>com.duyphuc.olympics.MainApp</mainClass>
                     <!-- Các cấu hình liên quan đến jlink sẽ không có tác dụng khi chúng ta không chạy goal jlink -->
                     <!-- <launcher>app</launcher> -->
                     <!-- <jlinkZipName>app</jlinkZipName> -->
@@ -167,7 +167,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <!-- Đây là lớp Launcher chứa main method thật sự để khởi chạy ứng dụng từ JAR -->
-                                    <mainClass>com.duyphuc.olympics.Launcher</mainClass>
+                                    <mainClass>com.duyphuc.olympics.MainApp</mainClass>
                                 </transformer>
                             </transformers>
                             <filters>
