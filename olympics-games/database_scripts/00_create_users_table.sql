@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS Users (
 );
 
 INSERT INTO Users (username, hashed_password, email, ROLE) VALUES 
-('admin', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'admin@example.com', 'ADMIN');
+('admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'admin@example.com', 'ADMIN');
