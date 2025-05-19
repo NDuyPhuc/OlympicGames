@@ -116,14 +116,13 @@ olympics-games/
         *   Ikonli
 *   **Charting Library:** JFreeChart
 *   **Password Hashing:** Apache Commons Codec (SHA-256)
-*   **Testing:** JUnit 5 (for unit testing, if implemented)
 
 ## 7. Team Members & Roles
 
-*   **[Member 1 Name] - [Student ID]**: [FullStack]
+*   **Nguyễn Duy Phúc - 97482403200**: FullStack
 
 
 ## 8. GitHub Repository
 
 The public GitHub repository for this project can be found at:
-**[[Your GitHub Repository Link](https://github.com/NDuyPhuc/OlympicGames)]**
+**(https://github.com/NDuyPhuc/OlympicGames)**
