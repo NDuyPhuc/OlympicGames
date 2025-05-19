@@ -1,111 +1,129 @@
+# Olympic Games Medal Analyzer
 
+## 1. Project Description
+
+This Java desktop application, "Olympic Games Medal Analyzer," allows users (administrators and staff) to log in, manage Olympic Games event data and medal records, and visualize statistical insights through various charts. The system connects to a MySQL database, implements Object-Oriented Programming (OOP) principles, utilizes Java Collections for data handling, and employs JFreeChart for data visualization.
+
+This project was developed as the final assignment for the Object-Oriented Programming with Java (ITE23005) course.
+
+## 2. Prerequisites
+
+Before running this application, ensure you have the following installed:
+
+*   **Java Development Kit (JDK):** Version 20 or higher (as per `pom.xml`).
+*   **Apache Maven:** To build the project and manage dependencies.
+*   **MySQL Server:** Version 8.0 or compatible.
+*   **MySQL Client:** SQLyog (as specified) or any other MySQL client (e.g., MySQL Workbench, DBeaver) for database setup.
+*   **IDE (Optional, for development):** Eclipse IDE (project was developed using Eclipse) or any IDE that supports Maven projects (e.g., IntelliJ IDEA, NetBeans).
+
+## 3. Database Setup
+
+The application requires a MySQL database named `olympicgames`.
+
+1.  **Create the Database:**
+    Using SQLyog or your preferred MySQL client, execute the following command:
+    ```sql
+    CREATE DATABASE olympicgames;
+    ```
+
+2.  **Run SQL Scripts:**
+    Execute the following SQL scripts located in the `database_scripts` folder **in the specified order**:
+    1.  `00_create_users_table.sql` - Creates the `Users` table and inserts a default admin.
+    2.  `01_create_olympic_events_table.sql` - Creates the `olympic_events` table.
+    3.  `02_create_medal_tables.sql` - Creates individual medal tables for various Olympic Games.
+    4.  `03_insert_medal_data_olymic_games.sql` - Populates the `olympic_events` table.
+    5.  `04_insert_medal_data_with_id_column.sql` - Populates the individual medal tables with data.
+
+3.  **Database Connection Configuration:**
+    The database connection details are configured in `src/main/java/com/duyphuc/olympics/db/DBConnectionManager.java`.
+    By default, it is configured as:
+    *   **URL:** `jdbc:mysql://localhost:3306/olympicgames`
+    *   **User:** `root`
+    *   **Password:** `123456`
+    If your MySQL setup differs, please update these constants in `DBConnectionManager.java` before running the application.
+
+4.  **Default Admin Credentials:**
+    After running the SQL scripts, a default admin user will be created:
+    *   **Username:** `admin`
+    *   **Password:** `admin` (The hash `a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3` corresponds to "admin")
+
+## 4. How to Run the Program
+
+1.  **Clone/Download the Project:** Obtain the project source code.
+2.  **Import Project into Eclipse:**
+    *   Open Eclipse IDE.
+    *   Select `File` -> `Import...`.
+    *   Choose `Maven` -> `Existing Maven Projects`.
+    *   Click `Next`.
+    *   Browse to the root directory of the cloned/downloaded project.
+    *   Ensure the `pom.xml` is recognized.
+    *   Click `Finish`.
+3.  **Build Project & Download Dependencies:** Maven should automatically download the required dependencies. If not, right-click on the project -> `Maven` -> `Update Project...`.
+4.  **Run the Application:**
+    *   Locate the main class: `src/main/java/com/duyphuc/olympics/MainApp.java`.
+        *(Note: `Launcher.java` is specified as the main class in `pom.xml` for the executable JAR, but `MainApp.java` is the JavaFX entry point).*
+    *   Right-click on `MainApp.java`.
+    *   Select `Run As` -> `Java Application`.
+
+
+## 5. Project Structure Overview
 
 ```
-OlympicGamesMedalAnalyzer/
-├── pom.xml                     // File cấu hình Maven (quản lý thư viện)
+olympics-games/
+├── .metadata/ # Eclipse workspace metadata
+├── database_scripts/ # SQL scripts for database setup
+│ ├── 00_create_users_table.sql
+│ ├── 01_create_olympic_events_table.sql
+│ ├── 02_create_medal_tables.sql
+│ ├── 03_insert_medal_data_olymic_games.sql
+│ └── 04_insert_medal_data_with_id_column.sql
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── duyphuc/
-│   │   │           └── olympics/
-│   │   │               ├── MainApp.java        // Lớp chính khởi chạy ứng dụng JavaFX
-│   │   │               │
-│   │   │               ├── controller/         // Chứa các lớp JavaFX Controller
-│   │   │               │   ├── LoginController.java
-│   │   │               │   ├── MainDashboardController.java
-│   │   │               │   ├── MedalManagementController.java
-│   │   │               │   ├── UserProfileController.java
-│   │   │               │   ├── AdminUserManagementController.java
-│   │   │               │   ├── ReportController.java 
-│   │   │               │   └── ChartViewController.java
-│   │   │               │
-│   │   │               │── animation/
-│   │   │               │   ├── OlympicRingsAnimation.java
-│   │   │               │   └── ParticleSystem.java 
-│   │   │               │
-│   │   │               ├── model/              // Chứa các lớp thực thể (POJO)
-│   │   │               │   ├── User.java
-│   │   │               │   ├── MedalEntry.java     // Đại diện cho một dòng trong bảng huy chương
-│   │   │               │   └── OlympicEvent.java   // Đại diện cho một kỳ Olympic (tên, năm, tên bảng DB)
-│   │   │               │
-│   │   │               ├── dao/                // Data Access Objects - Tương tác với CSDL
-│   │   │               │   ├── UserDAO.java
-│   │   │               │   ├── MedalDAO.java
-│   │   │               │   └── OlympicEventDAO.java // Để lấy danh sách các kỳ Olympic
-│   │   │               │
-│   │   │               ├── service/            // Logic nghiệp vụ
-│   │   │               │   ├── AuthService.java    // Xử lý đăng nhập, session
-│   │   │               │   ├── MedalService.java   // Xử lý logic dữ liệu huy chương, tính toán
-│   │   │               │   ├── ChartService.java   // Tạo và chuẩn bị dữ liệu cho JFreeChart
-│   │   │               │   ├── ReportService.java   // Tạo và chuẩn bị dữ liệu cho JFreeChart
-│   │   │               │   └── ReportService.java  // (Extra) Tạo các báo cáo, derivable data
-│   │   │               │
-│   │   │               ├── db/                 // Quản lý kết nối CSDL
-│   │   │               │   └── DBConnectionManager.java // Singleton pattern
-│   │   │               │
-│   │   │               ├── util/               // Các lớp tiện ích
-│   │   │               │   ├── PasswordHasher.java
-│   │   │               │   ├── FxmlLoaderUtil.java // Tiện ích tải FXML
-│   │   │               │   └── AlertUtil.java      // Hiển thị dialog thông báo
-│   │   │               │
-│   │   │               └── exception/          // Các lớp Exception tùy chỉnh (nếu cần)
-│   │   │                   ├── AuthenticationException.java
-│   │   │                   ├── DataAccessException.java
-│   │   │                   └── InvalidInputException.java
-│   │   │
-│   │   └── resources/
-│   │       └── com/
-│   │           └── duyphuc/
-│   │               └── olympics/
-│   │                   ├── fxml/               // Chứa các file FXML cho giao diện
-│   │                   │   ├── LoginView.fxml
-│   │                   │   ├── MainDashboardView.fxml
-│   │                   │   ├── MedalManagementView.fxml
-│   │                   │   ├── ReportView.fxml
-│   │                   │   ├── UserProfileView.fxml
-│   │                   │   ├── UserFormDialog.fxml
-│   │                   │   ├── AdminUserManagementView.fxml 
-│   │                   │   └── ChartView.fxml
-│   │                   │
-│   │                   ├── css/                // (Optional) Chứa file CSS cho giao diện
-│   │                   │   ├── AdminUserManagementView.css
-│   │                   │   ├── login.css
-│   │                   │   ├── ChartView.css
-│   │                   │   ├── dashboard_styles.css
-│   │                   │   ├── medal_management_styles.css
-│   │                   │   ├── ReportView.css
-│   │                   │   └── UserProfileStyles.css
-│   │                   │
-│   │                   └── images/             // (Optional) Chứa hình ảnh
-│   │                      ├── add_user_icon.png
-│   │                      ├── delete_icon.png
-│   │                      ├── edit_icon.png
-│   │                      ├── Olympic_rings.png
-│   │                      ├── refresh_icon.png
-│   │                      └── users_icon.png  
-│   │
-│   └── test/                   // (Optional but recommended) Chứa các lớp test
-│       └── java/
-│           └── com/
-│               └── duyphuc/
-│                   └── olympics/
-│                       ├── service/
-│                       │   └── AuthServiceTest.java
-│                       └── dao/
-│                           └── MedalDAOTest.java
-│
-├── database_scripts/           // Chứa các script SQL
-│   ├── 00_create_users_table.sql
-│   ├── 01_create_olympic_events_table.sql
-│   ├── 02_create_medal_tables.sql // Script tạo các bảng huy chương đã cho
-│   ├── 03_insert_olympic_events_data.sql
-│   └── 04_insert_medal_data.sql   // Script insert dữ liệu huy chương đã cho
-│
-├── reports/                    // (Generated) Nơi lưu các báo cáo, biểu đồ xuất ra
-│
-├── README.md                   // Hướng dẫn cài đặt, chạy dự án, mô tả
-└── OlympicGamesMedalAnalyzer.docx // Báo cáo dự án
+│ ├── main/
+│ │ ├── java/
+│ │ │ └── com/duyphuc/olympics/
+│ │ │ ├── MainApp.java # JavaFX Application entry point
+│ │ │ ├── Launcher.java # Main class for executable JAR
+│ │ │ ├── animation/
+│ │ │ ├── controller/
+│ │ │ ├── dao/
+│ │ │ ├── db/
+│ │ │ ├── exception/
+│ │ │ ├── model/
+│ │ │ ├── service/
+│ │ │ └── util/
+│ │ └── resources/
+│ │ └── com/duyphuc/olympics/
+│ │ ├── css/ # CSS stylesheets
+│ │ ├── fxml/ # FXML view files
+│ │ └── images/ # Image assets
+│ └── test/ # (JUnit tests would go here)
+├── target/ # Build output (compiled classes, JAR file)
+├── dependency-reduced-pom.xml # Generated by maven-shade-plugin
+└── pom.xml # Maven project configuration
 ```
 
+## 6. Technologies Used
 
+*   **Programming Language:** Java (JDK 20)
+*   **Build Tool:** Apache Maven
+*   **Database:** MySQL
+*   **GUI Framework:** JavaFX
+    *   **UI Libraries:**
+        *   MaterialFX
+        *   ControlsFX
+        *   TilesFX
+        *   FontAwesomeFX
+        *   Ikonli
+*   **Charting Library:** JFreeChart
+*   **Password Hashing:** Apache Commons Codec (SHA-256)
+*   **Testing:** JUnit 5 (for unit testing, if implemented)
+
+## 7. Team Members & Roles
+
+*   **[Member 1 Name] - [Student ID]**: [FullStack]
+
+
+## 8. GitHub Repository
+
+The public GitHub repository for this project can be found at:
+**[[Your GitHub Repository Link](https://github.com/NDuyPhuc/OlympicGames)]**
