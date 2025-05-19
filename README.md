@@ -61,7 +61,6 @@ The application requires a MySQL database named `olympicgames`.
 3.  **Build Project & Download Dependencies:** Maven should automatically download the required dependencies. If not, right-click on the project -> `Maven` -> `Update Project...`.
 4.  **Run the Application:**
     *   Locate the main class: `src/main/java/com/duyphuc/olympics/MainApp.java`.
-        *(Note: `Launcher.java` is specified as the main class in `pom.xml` for the executable JAR, but `MainApp.java` is the JavaFX entry point).*
     *   Right-click on `MainApp.java`.
     *   Select `Run As` -> `Java Application`.
 
@@ -82,7 +81,6 @@ olympics-games/
 │ │ ├── java/
 │ │ │ └── com/duyphuc/olympics/
 │ │ │ ├── MainApp.java # JavaFX Application entry point
-│ │ │ ├── Launcher.java # Main class for executable JAR
 │ │ │ ├── animation/
 │ │ │ ├── controller/
 │ │ │ ├── dao/
