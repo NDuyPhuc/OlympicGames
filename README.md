@@ -48,7 +48,7 @@ The application requires a MySQL database named `olympicgames`.
 4.  **Default Admin Credentials:**
     After running the SQL scripts, a default admin user will be created:
     *   **Username:** `admin`
-    *   **Password:** `admin` (The hash `a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3` corresponds to "admin")
+    *   **Password:** `admin` (The hash `240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9` corresponds to "admin")
 
 ## 4. How to Run the Program (Using Eclipse IDE)
 
