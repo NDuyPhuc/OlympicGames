@@ -164,3 +164,5 @@ olympics-games/
 
 The public GitHub repository for this project can be found at:
 [https://github.com/NDuyPhuc/OlympicGames](https://github.com/NDuyPhuc/OlympicGames)
+
+Link video Youtube: https://www.youtube.com/watch?v=kOdH25aCOnE&feature=youtu.be
